@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Actio</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #0e0e0c; --bg-2: #161614; --bg-3: #1e1e1a; --border: #2a2a26; --border-2: #1e1e1a;
+    --text: #e8e6df; --text-2: #d4d2c9; --text-3: #6b6b67; --text-4: #444441; --text-5: #2e2e2a;
+    --accent: #c8f060; --accent-text: #0e0e0c; --accent-hover: #d4f570;
+  }
+  body.light {
+    --bg: #faf9f6; --bg-2: #ffffff; --bg-3: #f1efe8; --border: #e3e1d8; --border-2: #ece9e0;
+    --text: #1a1a18; --text-2: #2e2c27; --text-3: #6b6b67; --text-4: #8a8980; --text-5: #b8b6ac;
+    --accent: #6b8f1f; --accent-text: #ffffff; --accent-hover: #5a7a18;
+  }
+  body { background: var(--bg); min-height: 100vh; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; color: var(--text); display: flex; flex-direction: column; transition: background 0.2s, color 0.2s; }
+ 
+  .topbar { display: flex; align-items: center; justify-content: space-between; padding: 16px 28px; border-bottom: 0.5px solid var(--border); flex-shrink: 0; }
+  .logo { display: flex; align-items: center; gap: 10px; }
+  .logo-mark { width: 28px; height: 28px; background: var(--accent); border-radius: 6px; display: flex; align-items: center; justify-content: center; }
+  .logo-name { font-size: 16px; font-weight: 500; letter-spacing: -0.3px; color: var(--text); }
+  .logo-badge { font-size: 11px; background: var(--bg-3); border: 0.5px solid var(--border); color: var(--text-3); padding: 2px 8px; border-radius: 4px; }
+  .nav-right { display: flex; gap: 14px; align-items: center; }
+  .nav-link { font-size: 13px; color: var(--text-4); cursor: pointer; background: none; border: none; font-family: inherit; }
+  .nav-link:hover { color: var(--text); }
+  .nav-link.active { color: var(--text); }
+  .theme-toggle { width: 30px; height: 30px; border-radius: 7px; border: 0.5px solid var(--border); background: var(--bg-2); display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--text-3); }
+  .theme-toggle:hover { color: var(--text); }
+ 
+  .layout { display: flex; flex: 1; overflow: hidden; }
+ 
+  .sidebar { width: 240px; border-right: 0.5px solid var(--border); display: flex; flex-direction: column; flex-shrink: 0; overflow: hidden; }
+ 
+  .account-box { padding: 14px 16px; border-bottom: 0.5px solid var(--border); }
+  .account-signed-out { display: flex; align-items: center; justify-content: space-between; }
+  .account-text { font-size: 12px; color: var(--text-4); }
+  .signin-btn { font-size: 12px; background: var(--bg-3); border: 0.5px solid var(--border); color: var(--text-2); padding: 5px 12px; border-radius: 6px; cursor: pointer; font-family: inherit; }
+  .signin-btn:hover { border-color: var(--text-4); }
+  .account-signed-in { display: none; align-items: center; justify-content: space-between; }
+  .account-user { display: flex; align-items: center; gap: 8px; }
+  .account-avatar { width: 24px; height: 24px; border-radius: 50%; background: var(--accent); color: var(--accent-text); font-size: 11px; font-weight: 600; display: flex; align-items: center; justify-content: center; }
+  .account-name { font-size: 12px; color: var(--text-2); }
+  .signout-link { font-size: 11px; color: var(--text-4); background: none; border: none; cursor: pointer; font-family: inherit; }
+  .signout-link:hover { color: var(--text-2); }
+ 
+  .sidebar-header { padding: 16px 16px 10px; display: flex; align-items: center; justify-content: space-between; }
+  .sidebar-title { font-size: 11px; color: var(--text-4); letter-spacing: 0.06em; text-transform: uppercase; }
+  .clear-btn { font-size: 11px; color: var(--text-5); background: none; border: none; cursor: pointer; font-family: inherit; }
+  .clear-btn:hover { color: var(--text-3); }
+  .history-list { flex: 1; overflow-y: auto; padding: 0 8px 16px; min-height: 60px; }
+  .history-item { padding: 9px 10px; border-radius: 8px; cursor: pointer; margin-bottom: 2px; border: 0.5px solid transparent; position: relative; }
+  .history-item:hover { background: var(--bg-2); border-color: var(--border); }
+  .history-item:hover .history-del { display: block; }
+  .history-item.active { background: var(--bg-2); border-color: var(--border); }
+  .history-item-title { font-size: 13px; color: var(--text-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 3px; padding-right: 16px; border: none; background: none; font-family: inherit; width: 100%; }
+  .history-item-title:focus { outline: 1px solid var(--accent); border-radius: 3px; }
+  .history-item-meta { font-size: 11px; color: var(--text-4); }
+  .history-del { display: none; position: absolute; top: 8px; right: 8px; background: none; border: none; color: var(--text-4); cursor: pointer; font-size: 13px; line-height: 1; padding: 2px; }
+  .history-del:hover { color: #e24b4a; }
+  .history-empty { padding: 24px 16px; font-size: 13px; color: var(--text-5); text-align: center; line-height: 1.6; }
+ 
+  .tutorial-panel { padding: 16px; border-top: 0.5px solid var(--border); }
+  .tutorial-title { font-size: 11px; color: var(--text-4); letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 12px; }
+  .tut-step { display: flex; gap: 10px; margin-bottom: 12px; align-items: flex-start; }
+  .tut-num { width: 20px; height: 20px; border-radius: 50%; background: var(--bg-3); border: 0.5px solid var(--border); font-size: 11px; color: var(--text-4); display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px; }
+  .tut-text { font-size: 12px; color: var(--text-3); line-height: 1.5; }
+  .tut-example { font-size: 11px; color: var(--text-5); font-style: italic; margin-top: 3px; }
+  .tut-video-link { font-size: 11px; color: var(--accent); background: none; border: none; cursor: pointer; font-family: inherit; padding: 0; margin-top: 4px; text-decoration: underline; }
+ 
+  .content { flex: 1; overflow-y: auto; padding: 40px 36px 48px; max-width: 700px; }
+ 
+  .landing { display: none; flex: 1; overflow-y: auto; }
+  .landing-hero { padding: 80px 60px 50px; max-width: 800px; }
+  .landing-tag { font-size: 12px; color: var(--accent); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 20px; }
+  .landing-title { font-size: 52px; font-weight: 500; line-height: 1.1; letter-spacing: -1px; color: var(--text); margin-bottom: 20px; }
+  .landing-title span { color: var(--accent); }
+  .landing-sub { font-size: 17px; color: var(--text-3); line-height: 1.7; max-width: 520px; margin-bottom: 36px; }
+  .landing-cta { display: inline-flex; align-items: center; gap: 8px; background: var(--accent); color: var(--accent-text); border: none; border-radius: 8px; padding: 12px 24px; font-size: 15px; font-weight: 500; cursor: pointer; font-family: inherit; }
+  .landing-cta:hover { background: var(--accent-hover); }
+  .landing-features { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; padding: 0 60px 40px; max-width: 800px; }
+  .feature-card { background: var(--bg-2); border: 0.5px solid var(--border); border-radius: 10px; padding: 20px; }
+  .feature-title { font-size: 14px; font-weight: 500; color: var(--text-2); margin-bottom: 6px; }
+  .feature-desc { font-size: 13px; color: var(--text-3); line-height: 1.5; }
+ 
+  .landing-video-section { padding: 20px 60px 70px; max-width: 800px; }
+  .landing-video-title { font-size: 13px; color: var(--text-4); letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 14px; }
+  .video-placeholder { aspect-ratio: 16/9; max-width: 480px; background: var(--bg-2); border: 0.5px dashed var(--border); border-radius: 12px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; color: var(--text-4); }
+  .video-play { width: 44px; height: 44px; border-radius: 50%; border: 1.5px solid var(--text-4); display: flex; align-items: center; justify-content: center; }
+  .video-placeholder-text { font-size: 12px; color: var(--text-4); text-align: center; padding: 0 20px; line-height: 1.5; }
+ 
+  .hero-tag { font-size: 12px; color: var(--accent); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 14px; }
+  .hero-title { font-size: 32px; font-weight: 500; line-height: 1.15; letter-spacing: -0.5px; color: var(--text); margin-bottom: 10px; }
+  .hero-sub { font-size: 14px; color: var(--text-3); line-height: 1.6; margin-bottom: 32px; }
+ 
+  .input-wrap { background: var(--bg-2); border: 0.5px solid var(--border); border-radius: 10px; overflow: hidden; margin-bottom: 10px; transition: border-color 0.15s; }
+  .input-wrap:focus-within { border-color: var(--text-4); }
+  .input-header { display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; border-bottom: 0.5px solid var(--border-2); }
+  .input-dots { display: flex; gap: 5px; }
+  .input-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--border); }
+  .input-label { font-size: 11px; color: var(--text-4); letter-spacing: 0.05em; text-transform: uppercase; }
+  textarea { width: 100%; background: transparent; border: none; outline: none; padding: 14px 16px; font-size: 14px; color: var(--text-2); line-height: 1.7; min-height: 130px; resize: vertical; font-family: inherit; }
+  textarea::placeholder { color: var(--text-5); }
+ 
+  .upload-zone { border: 0.5px dashed var(--border); border-radius: 10px; padding: 16px; text-align: center; cursor: pointer; margin-bottom: 10px; transition: border-color 0.15s, background 0.15s; }
+  .upload-zone:hover, .upload-zone.drag { border-color: var(--accent); }
+  .upload-zone input { display: none; }
+  .upload-icon { width: 22px; height: 22px; margin: 0 auto 8px; color: var(--text-4); }
+  .upload-text { font-size: 13px; color: var(--text-4); }
+  .upload-text span { color: var(--accent); }
+  .upload-hint { font-size: 11px; color: var(--text-5); margin-top: 3px; }
+ 
+  .actions { display: flex; align-items: center; gap: 10px; margin-bottom: 32px; }
+  .btn-main { display: inline-flex; align-items: center; gap: 7px; background: var(--accent); color: var(--accent-text); border: none; border-radius: 8px; padding: 9px 18px; font-size: 14px; font-weight: 500; cursor: pointer; font-family: inherit; }
+  .btn-main:hover { background: var(--accent-hover); }
+  .btn-main:disabled { opacity: 0.4; cursor: not-allowed; }
+ 
+  .loading { display: none; align-items: center; gap: 10px; color: var(--text-4); font-size: 14px; padding: 0.5rem 0 1rem; }
+  .dot { width: 5px; height: 5px; border-radius: 50%; background: var(--text-4); animation: pulse 1.2s ease-in-out infinite; }
+  .dot:nth-child(2) { animation-delay: 0.2s; }
+  .dot:nth-child(3) { animation-delay: 0.4s; }
+  @keyframes pulse { 0%,80%,100%{opacity:.2}40%{opacity:1} }
+ 
+  .divider { font-size: 11px; color: var(--text-5); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 14px; display: flex; align-items: center; gap: 12px; }
+  .divider::before, .divider::after { content: ''; flex: 1; height: 0.5px; background: var(--border-2); }
+  .summary { display: flex; align-items: center; justify-content: space-between; background: var(--bg-2); border: 0.5px solid var(--border); border-radius: 8px; padding: 10px 14px; margin-bottom: 10px; }
+  .summary-text { font-size: 13px; color: var(--text-3); }
+  .summary-text strong { color: var(--text-2); }
+  .copy-btn { font-size: 12px; color: var(--text-4); background: var(--bg-3); border: 0.5px solid var(--border); border-radius: 6px; padding: 4px 10px; cursor: pointer; font-family: inherit; }
+  .copy-btn:hover { color: var(--text-2); }
+  .cards { display: flex; flex-direction: column; gap: 8px; }
+  .card { background: var(--bg-2); border: 0.5px solid var(--border); border-radius: 10px; padding: 14px 16px; }
+  .card-task { font-size: 14px; color: var(--text-2); font-weight: 500; margin-bottom: 8px; line-height: 1.4; }
+  .card-meta { display: flex; gap: 6px; flex-wrap: wrap; }
+  .badge { font-size: 11px; padding: 3px 9px; border-radius: 5px; display: inline-flex; align-items: center; gap: 4px; }
+  .b-owner { background: var(--bg-3); color: var(--text-3); border: 0.5px solid var(--border); }
+  .b-date  { background: var(--bg-3); color: var(--text-3); border: 0.5px solid var(--border); }
+  .b-high  { background: #1e0a0a; color: #e24b4a; border: 0.5px solid #2e1010; }
+  .b-med   { background: #1a150a; color: #ba7517; border: 0.5px solid #2a200a; }
+  .b-low   { background: #0a1a0a; color: #639922; border: 0.5px solid #102a10; }
+  body.light .b-high { background: #fde8e8; color: #c52e2e; border-color: #f5c5c5; }
+  body.light .b-med  { background: #fdf1da; color: #9a5e0c; border-color: #f3dba0; }
+  body.light .b-low  { background: #e6f0d8; color: #4b7a14; border-color: #cce3b0; }
+ 
+  .history-list::-webkit-scrollbar, .content::-webkit-scrollbar { width: 4px; }
+  .history-list::-webkit-scrollbar-track, .content::-webkit-scrollbar-track { background: transparent; }
+  .history-list::-webkit-scrollbar-thumb, .content::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+</style>
+</head>
+<body>
+ 
+<div class="topbar">
+  <div class="logo">
+    <div class="logo-mark">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 13L8 3L13 13M5.5 9h5" stroke="var(--accent-text)" stroke-width="1.8" stroke-linecap="round"/></svg>
+    </div>
+    <span class="logo-name">Actio</span>
+    <span class="logo-badge">beta</span>
+  </div>
+  <div class="nav-right">
+    <button class="nav-link" onclick="showPage('landing')">Home</button>
+    <button class="nav-link active" id="appNavLink" onclick="showPage('app')">App</button>
+    <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()" title="Toggle theme">
+      <svg id="themeIcon" width="15" height="15" viewBox="0 0 15 15" fill="none"><path d="M7.5 1v1.5M7.5 12.5V14M14 7.5h-1.5M2.5 7.5H1M12 3l-1 1M4 11l-1 1M12 12l-1-1M4 4L3 3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><circle cx="7.5" cy="7.5" r="3" stroke="currentColor" stroke-width="1.3"/></svg>
+    </button>
+  </div>
+</div>
+ 
+<div class="layout" id="appLayout">
+ 
+  <div class="sidebar">
+    <div class="account-box">
+      <div class="account-signed-out" id="signedOutBox">
+        <span class="account-text">Not signed in</span>
+        <button class="signin-btn" onclick="signIn()">Sign in</button>
+      </div>
+      <div class="account-signed-in" id="signedInBox">
+        <div class="account-user">
+          <div class="account-avatar" id="userAvatar">U</div>
+          <span class="account-name" id="userName">User</span>
+        </div>
+        <button class="signout-link" onclick="signOut()">Sign out</button>
+      </div>
+    </div>
+ 
+    <div class="sidebar-header">
+      <span class="sidebar-title">History</span>
+      <button class="clear-btn" onclick="clearHistory()">Clear all</button>
+    </div>
+    <div class="history-list" id="historyList"></div>
+ 
+    <div class="tutorial-panel">
+      <div class="tutorial-title">How to use</div>
+      <div class="tut-step">
+        <div class="tut-num">1</div>
+        <div>
+          <div class="tut-text">Type anything — short or long</div>
+          <div class="tut-example">"call John tomorrow re: budget"</div>
+        </div>
+      </div>
+      <div class="tut-step">
+        <div class="tut-num">2</div>
+        <div><div class="tut-text">Or upload a .txt meeting transcript</div></div>
+      </div>
+      <div class="tut-step">
+        <div class="tut-num">3</div>
+        <div>
+          <div class="tut-text">Hit Extract — get tasks, owners, deadlines</div>
+          <button class="tut-video-link" onclick="showPage('landing')">Watch the full walkthrough →</button>
+        </div>
+      </div>
+    </div>
+  </div>
+ 
+  <div class="content" id="appContent">
+    <div class="hero-tag">AI-powered</div>
+    <div class="hero-title">Turn meetings into<br>clear action items</div>
+    <div class="hero-sub">Paste notes, upload a file, or type a quick phrase. Actio understands and extracts every task, owner, and priority.</div>
+ 
+    <div class="upload-zone" id="uploadZone" onclick="document.getElementById('fileInput').click()" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event)">
+      <input type="file" id="fileInput" accept=".txt" onchange="handleFile(event)" />
+      <svg class="upload-icon" viewBox="0 0 24 24" fill="none"><path d="M12 4v12m0-12 4 4m-4-4-4 4M5 16v2a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <div class="upload-text"><span>Choose a .txt file</span> or drag and drop</div>
+      <div class="upload-hint">Supports .txt files</div>
+    </div>
+ 
+    <div class="input-wrap">
+      <div class="input-header">
+        <div class="input-dots"><div class="input-dot"></div><div class="input-dot"></div><div class="input-dot"></div></div>
+        <span class="input-label">Notes / Transcript</span>
+      </div>
+      <textarea id="transcript" placeholder='Try "call John tomorrow re: budget" or paste full meeting notes...'></textarea>
+    </div>
+ 
+    <div class="actions">
+      <button class="btn-main" id="extractBtn" onclick="extract()">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 1.5L8.5 5.5H12.5L9.5 8L10.5 12L7 9.5L3.5 12L4.5 8L1.5 5.5H5.5L7 1.5Z" fill="var(--accent-text)"/></svg>
+        Extract action items
+      </button>
+    </div>
+ 
+    <div id="loading" class="loading">
+      <div class="dot"></div><div class="dot"></div><div class="dot"></div>
+      <span>Extracting action items...</span>
+    </div>
+ 
+    <div id="results" style="display:none">
+      <div class="divider">Results</div>
+      <div id="results-inner"></div>
+    </div>
+  </div>
+ 
+</div>
+ 
+<div class="landing" id="landingPage">
+  <div class="landing-hero">
+    <div class="landing-tag">AI-powered · Free to use</div>
+    <div class="landing-title">Meetings end.<br>Action items <span>don't</span><br>get lost.</div>
+    <div class="landing-sub">Actio reads your meeting notes and instantly pulls out every task, who owns it, and when it's due. No more chasing people for follow-ups.</div>
+    <button class="landing-cta" onclick="showPage('app')">
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 1.5L8.5 5.5H12.5L9.5 8L10.5 12L7 9.5L3.5 12L4.5 8L1.5 5.5H5.5L7 1.5Z" fill="var(--accent-text)"/></svg>
+      Try Actio free
+    </button>
+  </div>
+  <div class="landing-features">
+    <div class="feature-card">
+      <div class="feature-title">Works with anything</div>
+      <div class="feature-desc">Short phrases, full transcripts, uploaded files — Actio understands them all.</div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-title">Smart priorities</div>
+      <div class="feature-desc">Automatically detects urgency and labels tasks as high, medium, or low priority.</div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-title">Meeting history</div>
+      <div class="feature-desc">Every extraction is saved and named. Come back anytime and pick up where you left off.</div>
+    </div>
+  </div>
+  <div class="landing-video-section">
+    <div class="landing-video-title">Watch how it works</div>
+    <div class="video-placeholder" id="videoPlaceholder">
+      <div class="video-play">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M4 2.5v9l8-4.5-8-4.5z" fill="currentColor"/></svg>
+      </div>
+      <div class="video-placeholder-text">Tutorial video coming soon</div>
+    </div>
+  </div>
+</div>
+ 
+<script>
+const TODAY = new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+ 
+// THEME
+function applyTheme(theme) {
+  document.body.classList.toggle('light', theme === 'light');
+  localStorage.setItem('actio-theme', theme);
+}
+function toggleTheme() {
+  const isLight = document.body.classList.contains('light');
+  applyTheme(isLight ? 'dark' : 'light');
+}
+applyTheme(localStorage.getItem('actio-theme') || 'dark');
+ 
+// PAGE NAV
+function showPage(page) {
+  const app = document.getElementById('appLayout');
+  const landing = document.getElementById('landingPage');
+  document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+  if (page === 'landing') {
+    app.style.display = 'none';
+    landing.style.display = 'flex';
+    document.querySelectorAll('.nav-link')[0].classList.add('active');
+  } else {
+    app.style.display = 'flex';
+    landing.style.display = 'none';
+    document.getElementById('appNavLink').classList.add('active');
+  }
+}
+ 
+// ACCOUNT (UI only, no real auth)
+function signIn() {
+  const name = prompt("What's your name?");
+  if (!name || !name.trim()) return;
+  localStorage.setItem('actio-user', name.trim());
+  renderAccount();
+}
+function signOut() {
+  localStorage.removeItem('actio-user');
+  renderAccount();
+}
+function renderAccount() {
+  const name = localStorage.getItem('actio-user');
+  if (name) {
+    document.getElementById('signedOutBox').style.display = 'none';
+    document.getElementById('signedInBox').style.display = 'flex';
+    document.getElementById('userName').textContent = name;
+    document.getElementById('userAvatar').textContent = name.trim()[0].toUpperCase();
+  } else {
+    document.getElementById('signedOutBox').style.display = 'flex';
+    document.getElementById('signedInBox').style.display = 'none';
+  }
+}
+ 
+// FILE UPLOAD
+function handleDragOver(e) { e.preventDefault(); document.getElementById('uploadZone').classList.add('drag'); }
+function handleDragLeave() { document.getElementById('uploadZone').classList.remove('drag'); }
+function handleDrop(e) {
+  e.preventDefault();
+  document.getElementById('uploadZone').classList.remove('drag');
+  const file = e.dataTransfer.files[0];
+  if (file) readFile(file);
+}
+function handleFile(e) { const file = e.target.files[0]; if (file) readFile(file); }
+function readFile(file) {
+  const reader = new FileReader();
+  reader.onload = (e) => { document.getElementById('transcript').value = e.target.result; };
+  reader.readAsText(file);
+}
+ 
+// HISTORY
+function getHistory() {
+  try { return JSON.parse(localStorage.getItem('actio-history') || '[]'); } catch { return []; }
+}
+function setHistory(h) { localStorage.setItem('actio-history', JSON.stringify(h)); }
+ 
+function saveToHistory(transcript, items) {
+  const history = getHistory();
+  const entry = {
+    id: Date.now(),
+    name: transcript.trim().slice(0, 40) + (transcript.length > 40 ? '...' : ''),
+    date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }),
+    count: items.length,
+    items
+  };
+  history.unshift(entry);
+  if (history.length > 50) history.pop();
+  setHistory(history);
+  renderHistory(entry.id);
+}
+ 
+function clearHistory() {
+  if (!getHistory().length) return;
+  if (!confirm('Delete all history?')) return;
+  setHistory([]);
+  renderHistory(null);
+}
+ 
+function deleteHistoryItem(id, evt) {
+  evt.stopPropagation();
+  const history = getHistory().filter(h => h.id !== id);
+  setHistory(history);
+  renderHistory(null);
+}
+ 
+function renameHistoryItem(id, newName) {
+  const history = getHistory();
+  const entry = history.find(h => h.id === id);
+  if (entry && newName.trim()) {
+    entry.name = newName.trim();
+    setHistory(history);
+  }
+}
+ 
+function renderHistory(activeId) {
+  const history = getHistory();
+  const el = document.getElementById('historyList');
+  if (!history.length) {
+    el.innerHTML = '<div class="history-empty">No meetings yet.<br>Your extractions will<br>appear here.</div>';
+    return;
+  }
+  el.innerHTML = history.map(h => `
+    <div class="history-item ${h.id === activeId ? 'active' : ''}" onclick="loadHistory(${h.id}, event)">
+      <button class="history-del" onclick="deleteHistoryItem(${h.id}, event)" title="Delete">×</button>
+      <input class="history-item-title" value="${h.name.replace(/"/g, '&quot;')}" onclick="event.stopPropagation()" onchange="renameHistoryItem(${h.id}, this.value)" />
+      <div class="history-item-meta">${h.date} · ${h.count} items</div>
+    </div>
+  `).join('');
+}
+ 
+function loadHistory(id, evt) {
+  const history = getHistory();
+  const entry = history.find(h => h.id === id);
+  if (!entry) return;
+  renderResults(entry.items, id);
+}
+ 
+// EXTRACT
+async function extract() {
+  const text = document.getElementById('transcript').value.trim();
+  if (!text) return;
+  const btn = document.getElementById('extractBtn');
+  btn.disabled = true;
+  document.getElementById('loading').style.display = 'flex';
+  document.getElementById('results').style.display = 'none';
+  try {
+    const res = await fetch('/extract', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ transcript: text, today: TODAY })
+    });
+    const items = await res.json();
+    saveToHistory(text, items);
+    renderResults(items, null);
+  } catch(e) {
+    document.getElementById('results-inner').innerHTML = `<p style="color:#e24b4a;font-size:14px">Something went wrong. Is the server running?</p>`;
+    document.getElementById('results').style.display = 'block';
+  } finally {
+    btn.disabled = false;
+    document.getElementById('loading').style.display = 'none';
+  }
+}
+ 
+function renderResults(items, activeId) {
+  const el = document.getElementById('results');
+  const inner = document.getElementById('results-inner');
+  if (!items.length) {
+    inner.innerHTML = `<p style="color:var(--text-3);font-size:14px">No action items found. Try adding more detail.</p>`;
+    el.style.display = 'block'; return;
+  }
+  const high = items.filter(i => i.priority === 'high').length;
+  const plain = items.map(i => `• ${i.task} — ${i.owner} (${i.deadline})`).join('\n');
+  let html = `<div class="summary">
+    <span class="summary-text"><strong>${items.length}</strong> action items${high ? ` · <span style="color:#e24b4a">${high} high priority</span>` : ''}</span>
+    <button class="copy-btn" onclick="navigator.clipboard.writeText(${JSON.stringify(plain).replace(/'/g,"&#39;")})">Copy all</button>
+  </div><div class="cards">`;
+  items.forEach(i => {
+    const pc = i.priority === 'high' ? 'b-high' : i.priority === 'medium' ? 'b-med' : 'b-low';
+    html += `<div class="card">
+      <div class="card-task">${i.task}</div>
+      <div class="card-meta">
+        <span class="badge b-owner">${i.owner}</span>
+        <span class="badge b-date">${i.deadline}</span>
+        <span class="badge ${pc}">${i.priority}</span>
+      </div>
+    </div>`;
+  });
+  html += '</div>';
+  inner.innerHTML = html;
+  el.style.display = 'block';
+  if (activeId) renderHistory(activeId);
+}
+ 
+renderAccount();
+renderHistory(null);
+showPage('app');
+</script>
+</body>
+</html>
