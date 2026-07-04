@@ -1,0 +1,1451 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Actio</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><rect width='16' height='16' rx='4' fill='%23c8f060'/><path d='M3 13L8 3L13 13M5.5 9h5' stroke='%230e0e0c' stroke-width='1.8' stroke-linecap='round' fill='none'/></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,380;0,9..144,500;1,9..144,460&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #0e0e0c; --bg-2: #161614; --bg-3: #1e1e1a; --border: #2a2a26; --border-2: #1e1e1a;
+    --text: #e8e6df; --text-2: #d4d2c9; --text-3: #6b6b67; --text-4: #444441; --text-5: #2e2e2a;
+    --accent: #c8f060; --accent-text: #0e0e0c; --accent-hover: #d4f570;
+    --accent-2: #ff7a59; --accent-2-soft: #2a1610;
+    --font-display: 'Fraunces', Georgia, serif;
+    --font-body: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  }
+  body.light {
+    --bg: #faf9f6; --bg-2: #ffffff; --bg-3: #f1efe8; --border: #e3e1d8; --border-2: #ece9e0;
+    --text: #1a1a18; --text-2: #2e2c27; --text-3: #6b6b67; --text-4: #8a8980; --text-5: #b8b6ac;
+    --accent: #6b8f1f; --accent-text: #ffffff; --accent-hover: #5a7a18;
+    --accent-2: #d65a3a; --accent-2-soft: #fbe9e2;
+  }
+  body { background: var(--bg); min-height: 100vh; font-family: var(--font-body); color: var(--text); display: flex; flex-direction: column; transition: background 0.2s, color 0.2s; }
+ 
+  .topbar { display: flex; align-items: center; justify-content: space-between; padding: 16px 28px; border-bottom: 0.5px solid var(--border); flex-shrink: 0; }
+  .logo { display: flex; align-items: center; gap: 10px; }
+  .logo-mark { width: 28px; height: 28px; background: var(--accent); border-radius: 6px; display: flex; align-items: center; justify-content: center; }
+  .logo-name { font-family: var(--font-display); font-size: 17px; font-weight: 500; letter-spacing: -0.2px; color: var(--text); }
+  .logo-badge { font-size: 11px; background: var(--bg-3); border: 0.5px solid var(--border); color: var(--text-3); padding: 2px 8px; border-radius: 4px; }
+  .nav-right { display: flex; gap: 14px; align-items: center; }
+  .nav-link { font-size: 13px; color: var(--text-4); cursor: pointer; background: none; border: none; font-family: inherit; }
+  .nav-link:hover { color: var(--text); }
+  .nav-link.active { color: var(--text); }
+  .theme-toggle { width: 30px; height: 30px; border-radius: 7px; border: 0.5px solid var(--border); background: var(--bg-2); display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--text-3); }
+  .theme-toggle:hover { color: var(--text); }
+ 
+  .layout { display: flex; flex: 1; overflow: hidden; }
+ 
+  .sidebar { width: 240px; border-right: 0.5px solid var(--border); display: flex; flex-direction: column; flex-shrink: 0; overflow: hidden; }
+ 
+  .account-box { padding: 14px 16px; border-bottom: 0.5px solid var(--border); }
+  .account-signed-out { display: flex; align-items: center; justify-content: space-between; }
+  .account-text { font-size: 12px; color: var(--text-4); }
+  .signin-btn { font-size: 12px; background: var(--bg-3); border: 0.5px solid var(--border); color: var(--text-2); padding: 5px 12px; border-radius: 6px; cursor: pointer; font-family: inherit; }
+  .signin-btn:hover { border-color: var(--text-4); }
+  .account-signed-in { display: none; align-items: center; justify-content: space-between; }
+  .account-user { display: flex; align-items: center; gap: 8px; }
+  .account-avatar { width: 24px; height: 24px; border-radius: 50%; background: var(--accent); color: var(--accent-text); font-size: 11px; font-weight: 600; display: flex; align-items: center; justify-content: center; }
+  .account-name { font-size: 12px; color: var(--text-2); }
+  .signout-link { font-size: 11px; color: var(--text-4); background: none; border: none; cursor: pointer; font-family: inherit; }
+  .signout-link:hover { color: var(--text-2); }
+ 
+  .sidebar-header { padding: 16px 16px 10px; display: flex; align-items: center; justify-content: space-between; }
+  .sidebar-title { font-size: 11px; color: var(--text-4); letter-spacing: 0.06em; text-transform: uppercase; }
+  .clear-btn { font-size: 11px; color: var(--text-5); background: none; border: none; cursor: pointer; font-family: inherit; }
+  .clear-btn:hover { color: var(--text-3); }
+  .history-list { flex: 1; overflow-y: auto; padding: 0 8px 16px; min-height: 60px; }
+  .history-item { padding: 9px 10px; border-radius: 8px; cursor: pointer; margin-bottom: 2px; border: 0.5px solid transparent; position: relative; }
+  .history-item:hover { background: var(--bg-2); border-color: var(--border); }
+  .history-item:hover .history-del { display: block; }
+  .history-item.active { background: var(--bg-2); border-color: var(--border); }
+  .history-item-title { font-size: 13px; color: var(--text-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 3px; padding-right: 16px; border: none; background: none; font-family: inherit; width: 100%; }
+  .history-item-title:focus { outline: 1px solid var(--accent); border-radius: 3px; }
+  .history-item-meta { font-size: 11px; color: var(--text-4); }
+  .history-del { display: none; position: absolute; top: 8px; right: 8px; background: none; border: none; color: var(--text-4); cursor: pointer; font-size: 13px; line-height: 1; padding: 2px; }
+  .history-del:hover { color: #e24b4a; }
+  .history-empty { padding: 24px 16px; font-size: 13px; color: var(--text-5); text-align: center; line-height: 1.6; }
+ 
+  .tutorial-panel { padding: 16px; border-top: 0.5px solid var(--border); }
+  .tutorial-title { font-size: 11px; color: var(--text-4); letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 12px; }
+  .tut-step { display: flex; gap: 10px; margin-bottom: 12px; align-items: flex-start; }
+  .tut-num { width: 20px; height: 20px; border-radius: 50%; background: var(--bg-3); border: 0.5px solid var(--border); font-size: 11px; color: var(--text-4); display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px; }
+  .tut-text { font-size: 12px; color: var(--text-3); line-height: 1.5; }
+  .tut-example { font-size: 11px; color: var(--text-5); font-style: italic; margin-top: 3px; }
+  .tut-video-link { font-size: 11px; color: var(--accent); background: none; border: none; cursor: pointer; font-family: inherit; padding: 0; margin-top: 4px; text-decoration: underline; }
+ 
+  .content { flex: 1; overflow-y: auto; padding: 40px 36px 48px; max-width: 700px; }
+ 
+  .landing { display: none; position: absolute; top: 57px; left: 0; right: 0; bottom: 0; overflow-y: auto; background: var(--bg); z-index: 10; flex-direction: column !important; }
+  .landing-hero { padding: 80px 60px 48px; max-width: 680px; margin: 0 auto; text-align: center; }
+  .landing-copy { flex: 1; min-width: 0; max-width: 460px; }
+  .landing-tag { font-size: 11px; color: var(--text-4); letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 22px; display: flex; align-items: center; justify-content: center; gap: 8px; }
+  .landing-tag::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: var(--accent); }
+  .landing-title { font-family: var(--font-display); font-size: 52px; font-weight: 380; line-height: 1.08; letter-spacing: -0.5px; color: var(--text); margin-bottom: 22px; } @media (min-width: 600px) {
+  .landing-title .nowrap { white-space: nowrap; }
+}
+  .landing-title em { font-style: italic; font-weight: 460; color: var(--accent); }
+  .landing-sub { font-size: 16px; color: var(--text-3); line-height: 1.7; margin-bottom: 32px; max-width: 500px; margin-left: auto; margin-right: auto; }
+  .landing-cta { display: inline-flex; align-items: center; gap: 8px; background: var(--accent); color: var(--accent-text); border: none; border-radius: 8px; padding: 12px 22px; font-size: 14px; font-weight: 500; cursor: pointer; font-family: var(--font-body); }
+  .landing-cta:hover { background: var(--accent-hover); }
+  .landing-cta-row { display: flex; align-items: center; justify-content: center; gap: 18px; }
+  .landing-cta-note { font-size: 12px; color: var(--text-5); }
+
+  .transform-vis { max-width: 600px; margin: 0 auto; padding: 0 60px 56px; }
+  .tv-input { background: var(--bg-2); border: 0.5px solid var(--border); border-radius: 10px; padding: 16px 18px; font-size: 13px; color: var(--text-3); line-height: 1.7; font-family: var(--font-body); }
+  .tv-arrow { display: flex; align-items: center; justify-content: center; padding: 10px 0; color: var(--text-5); }
+  .tv-arrow svg { animation: tvbounce 1.8s ease-in-out infinite; }
+  @keyframes tvbounce { 0%,100%{ transform: translateY(0); opacity: .5 } 50%{ transform: translateY(4px); opacity: 1 } }
+  .tv-cards-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .tv-card { background: var(--bg-2); border: 0.5px solid var(--accent); border-radius: 10px; padding: 14px 16px; box-shadow: 0 8px 24px rgba(0,0,0,0.15); }
+  body.light .tv-card { box-shadow: 0 8px 24px rgba(0,0,0,0.06); }
+  .tv-card-task { font-size: 13px; color: var(--text-2); font-weight: 500; margin-bottom: 8px; line-height: 1.4; }
+  .tv-card-meta { display: flex; gap: 5px; flex-wrap: wrap; }
+  .tv-badge { font-size: 11px; padding: 2px 7px; border-radius: 5px; background: var(--bg-3); color: var(--text-3); border: 0.5px solid var(--border); }
+  .tv-badge.high { background: #1e0a0a; color: #e24b4a; border-color: #2e1010; }
+  body.light .tv-badge.high { background: #fde8e8; color: #c52e2e; border-color: #f5c5c5; }
+
+  .landing-features { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; padding: 0 60px 56px; max-width: 860px; margin: 0 auto; border-top: 0.5px solid var(--border); padding-top: 56px; }
+  .feature-card { background: var(--bg-2); border: 0.5px solid var(--border); border-radius: 10px; padding: 20px; }
+  .feature-icon { width: 28px; height: 28px; border-radius: 7px; background: var(--bg-3); border: 0.5px solid var(--border); display: flex; align-items: center; justify-content: center; color: var(--accent); margin-bottom: 14px; }
+  .feature-title { font-size: 14px; font-weight: 500; color: var(--text-2); margin-bottom: 6px; }
+  .feature-desc { font-size: 13px; color: var(--text-3); line-height: 1.5; }
+
+  .landing-video-section { padding: 0 60px 80px; max-width: 860px; margin: 0 auto; }
+  .landing-video-title { font-size: 13px; color: var(--text-4); letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 14px; }
+  .video-placeholder { aspect-ratio: 16/9; max-width: 480px; background: var(--bg-2); border: 0.5px dashed var(--border); border-radius: 12px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; color: var(--text-4); }
+  .video-play { width: 44px; height: 44px; border-radius: 50%; border: 1.5px solid var(--text-4); display: flex; align-items: center; justify-content: center; }
+  .video-placeholder-text { font-size: 12px; color: var(--text-4); text-align: center; padding: 0 20px; line-height: 1.5; }
+ 
+  .hero-tag { font-size: 11px; color: var(--text-4); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 14px; }
+  .hero-title { font-family: var(--font-display); font-size: 30px; font-weight: 380; line-height: 1.18; letter-spacing: -0.3px; color: var(--text); margin-bottom: 10px; }
+  .hero-sub { font-size: 14px; color: var(--text-3); line-height: 1.6; margin-bottom: 32px; }
+ 
+  .input-wrap { background: var(--bg-2); border: 0.5px solid var(--border); border-radius: 10px; overflow: hidden; margin-bottom: 10px; transition: border-color 0.15s; }
+  .input-wrap:focus-within { border-color: var(--text-4); }
+  .input-header { display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; border-bottom: 0.5px solid var(--border-2); }
+  .input-dots { display: flex; gap: 5px; }
+  .input-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--border); }
+  .input-label { font-size: 11px; color: var(--text-4); letter-spacing: 0.05em; text-transform: uppercase; }
+  textarea { width: 100%; background: transparent; border: none; outline: none; padding: 14px 16px; font-size: 14px; color: var(--text-2); line-height: 1.7; min-height: 130px; resize: vertical; font-family: inherit; }
+  textarea::placeholder { color: var(--text-5); }
+ 
+  .upload-zone { border: 0.5px dashed var(--border); border-radius: 10px; padding: 16px; text-align: center; cursor: pointer; margin-bottom: 10px; transition: border-color 0.15s, background 0.15s; }
+  .upload-zone:hover, .upload-zone.drag { border-color: var(--accent); }
+  .upload-zone input { display: none; }
+  .upload-icon { width: 22px; height: 22px; margin: 0 auto 8px; color: var(--text-4); }
+  .upload-text { font-size: 13px; color: var(--text-4); }
+  .upload-text span { color: var(--accent); }
+  .upload-hint { font-size: 11px; color: var(--text-5); margin-top: 3px; }
+ 
+  .actions { display: flex; align-items: center; gap: 10px; margin-bottom: 32px; }
+  .btn-main { display: inline-flex; align-items: center; gap: 7px; background: var(--accent); color: var(--accent-text); border: none; border-radius: 8px; padding: 9px 18px; font-size: 14px; font-weight: 500; cursor: pointer; font-family: inherit; }
+  .btn-main:hover { background: var(--accent-hover); }
+  .btn-main:disabled { opacity: 0.4; cursor: not-allowed; }
+ 
+  .loading { display: none; align-items: center; gap: 10px; color: var(--text-4); font-size: 14px; padding: 0.5rem 0 1rem; }
+  .dot { width: 5px; height: 5px; border-radius: 50%; background: var(--text-4); animation: pulse 1.2s ease-in-out infinite; }
+  .dot:nth-child(2) { animation-delay: 0.2s; }
+  .dot:nth-child(3) { animation-delay: 0.4s; }
+  @keyframes pulse { 0%,80%,100%{opacity:.2}40%{opacity:1} }
+ 
+  .divider { font-size: 11px; color: var(--text-5); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 14px; display: flex; align-items: center; gap: 12px; }
+  .divider::before, .divider::after { content: ''; flex: 1; height: 0.5px; background: var(--border-2); }
+  .summary { display: flex; align-items: center; justify-content: space-between; background: var(--bg-2); border: 0.5px solid var(--border); border-radius: 8px; padding: 10px 14px; margin-bottom: 10px; }
+  .summary-text { font-size: 13px; color: var(--text-3); }
+  .summary-text strong { color: var(--text-2); }
+  .copy-btn { font-size: 12px; color: var(--text-4); background: var(--bg-3); border: 0.5px solid var(--border); border-radius: 6px; padding: 4px 10px; cursor: pointer; font-family: inherit; }
+  .copy-btn:hover { color: var(--text-2); }
+  .cards { display: flex; flex-direction: column; gap: 8px; }
+  .card { background: var(--bg-2); border: 0.5px solid var(--border); border-radius: 10px; padding: 14px 16px; }
+  .card-task { font-size: 14px; color: var(--text-2); font-weight: 500; margin-bottom: 8px; line-height: 1.4; }
+  .card-meta { display: flex; gap: 6px; flex-wrap: wrap; }
+  .badge { font-size: 11px; padding: 3px 9px; border-radius: 5px; display: inline-flex; align-items: center; gap: 4px; }
+  .b-owner { background: var(--bg-3); color: var(--text-3); border: 0.5px solid var(--border); }
+  .b-date  { background: var(--bg-3); color: var(--text-3); border: 0.5px solid var(--border); }
+  .b-high  { background: #1e0a0a; color: #e24b4a; border: 0.5px solid #2e1010; }
+  .b-med   { background: #1a150a; color: #ba7517; border: 0.5px solid #2a200a; }
+  .b-low   { background: #0a1a0a; color: #639922; border: 0.5px solid #102a10; }
+  body.light .b-high { background: #fde8e8; color: #c52e2e; border-color: #f5c5c5; }
+  body.light .b-med  { background: #fdf1da; color: #9a5e0c; border-color: #f3dba0; }
+  body.light .b-low  { background: #e6f0d8; color: #4b7a14; border-color: #cce3b0; }
+ 
+
+  /* ---- Toast notifications ---- */
+  .toast-stack { position: fixed; bottom: 24px; left: 24px; z-index: 300; display: flex; flex-direction: column; gap: 8px; pointer-events: none; }
+  .toast { display: flex; align-items: center; gap: 10px; background: var(--bg-2); border: 0.5px solid var(--border); border-radius: 9px; padding: 11px 16px; font-size: 13px; color: var(--text-2); box-shadow: 0 8px 24px rgba(0,0,0,0.3); pointer-events: auto; min-width: 200px; max-width: 320px; animation: toastIn 0.22s cubic-bezier(.2,.7,.3,1); }
+  .toast.removing { animation: toastOut 0.18s ease forwards; }
+  @keyframes toastIn  { from { opacity:0; transform:translateY(10px) scale(.97) } to { opacity:1; transform:translateY(0) scale(1) } }
+  @keyframes toastOut { to   { opacity:0; transform:translateY(8px) scale(.97) } }
+  .toast-icon { width: 18px; height: 18px; border-radius: 50%; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 10px; }
+  .toast.success .toast-icon { background: var(--accent); color: var(--accent-text); }
+  .toast.error   .toast-icon { background: #e24b4a; color: #fff; }
+  .toast.info    .toast-icon { background: var(--bg-3); color: var(--text-3); border: 0.5px solid var(--border); }
+  .toast-close { margin-left: auto; background: none; border: none; color: var(--text-4); cursor: pointer; font-size: 14px; line-height: 1; padding: 0 0 0 8px; }
+
+  /* ---- History search ---- */
+  .history-search-wrap { padding: 6px 10px 0; }
+  .history-search { width: 100%; background: var(--bg-3); border: 0.5px solid var(--border); border-radius: 7px; padding: 6px 10px; font-size: 12px; color: var(--text-2); font-family: inherit; outline: none; }
+  .history-search:focus { border-color: var(--text-4); }
+  .history-search::placeholder { color: var(--text-5); }
+
+  /* ---- Stats bar ---- */
+  .stats-bar { display: flex; gap: 10px; margin-bottom: 14px; flex-wrap: wrap; }
+  .stat-chip { display: flex; align-items: center; gap: 6px; background: var(--bg-2); border: 0.5px solid var(--border); border-radius: 7px; padding: 6px 12px; font-size: 12px; color: var(--text-3); }
+  .stat-chip strong { color: var(--text-2); }
+  .stat-chip.urgent strong { color: #e24b4a; }
+
+  /* ---- Task cards with actions ---- */
+  .card { background: var(--bg-2); border: 0.5px solid var(--border); border-radius: 10px; padding: 14px 16px; transition: border-color 0.15s; }
+  .card:hover { border-color: var(--text-5); }
+  .card.done { opacity: 0.5; }
+  .card.done .card-task { text-decoration: line-through; color: var(--text-4); }
+  .card-top { display: flex; align-items: flex-start; gap: 10px; }
+  .card-check { width: 18px; height: 18px; border-radius: 5px; border: 1.5px solid var(--border); flex-shrink: 0; margin-top: 1px; cursor: pointer; display: flex; align-items: center; justify-content: center; color: transparent; background: transparent; }
+  .card-check:hover { border-color: var(--accent); }
+  .card.done .card-check { background: var(--accent); border-color: var(--accent); color: var(--accent-text); }
+  .card-body { flex: 1; min-width: 0; }
+  .card-task { font-size: 14px; color: var(--text-2); font-weight: 500; margin-bottom: 8px; line-height: 1.4; }
+  .card-actions { display: flex; align-items: center; gap: 6px; margin-top: 10px; padding-top: 10px; border-top: 0.5px solid var(--border-2); opacity: 0; transition: opacity 0.15s; }
+  .card:hover .card-actions { opacity: 1; }
+  .card-act-btn { font-size: 11px; color: var(--text-4); background: var(--bg-3); border: 0.5px solid var(--border); border-radius: 5px; padding: 3px 8px; cursor: pointer; font-family: inherit; }
+  .card-act-btn:hover { color: var(--text-2); }
+  .card-act-btn.danger:hover { color: #e24b4a; border-color: #3a1c1c; }
+  .card-note { font-size: 12px; color: var(--text-4); margin-top: 8px; line-height: 1.5; font-style: italic; }
+  .card-note-input { width: 100%; background: var(--bg-3); border: 0.5px solid var(--border); border-radius: 6px; padding: 7px 10px; font-size: 12px; color: var(--text); font-family: inherit; outline: none; margin-top: 8px; resize: none; }
+
+  /* ---- Summary bar upgrade ---- */
+  .summary { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; background: var(--bg-2); border: 0.5px solid var(--border); border-radius: 8px; padding: 10px 14px; margin-bottom: 10px; }
+  .summary-actions { display: flex; gap: 6px; }
+
+  /* ---- Onboarding tooltip ---- */
+  .ob-overlay { display: none; position: fixed; inset: 0; z-index: 400; pointer-events: none; }
+  .ob-overlay.active { display: block; }
+  .ob-backdrop { position: absolute; inset: 0; background: rgba(0,0,0,0.55); pointer-events: auto; }
+  .ob-hole { position: absolute; border-radius: 10px; box-shadow: 0 0 0 9999px rgba(0,0,0,0.55); pointer-events: none; transition: all 0.4s cubic-bezier(.2,.7,.3,1); }
+  .ob-tip { position: absolute; background: var(--bg-2); border: 0.5px solid var(--border); border-radius: 12px; padding: 16px 18px; width: 240px; box-shadow: 0 12px 32px rgba(0,0,0,0.4); pointer-events: auto; animation: modalrise 0.25s cubic-bezier(.2,.7,.3,1); }
+  .ob-step { font-size: 11px; color: var(--text-4); margin-bottom: 4px; }
+  .ob-title { font-family: var(--font-display); font-size: 15px; color: var(--text); margin-bottom: 6px; }
+  .ob-desc { font-size: 12px; color: var(--text-3); line-height: 1.6; margin-bottom: 14px; }
+  .ob-btns { display: flex; align-items: center; justify-content: space-between; }
+  .ob-skip { font-size: 11px; color: var(--text-5); background: none; border: none; cursor: pointer; font-family: inherit; }
+  .ob-skip:hover { color: var(--text-3); }
+  .ob-next { font-size: 12px; background: var(--accent); color: var(--accent-text); border: none; border-radius: 6px; padding: 6px 14px; cursor: pointer; font-family: inherit; font-weight: 500; }
+  .ob-dots { display: flex; gap: 4px; }
+  .ob-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--border); }
+  .ob-dot.active { background: var(--accent); }
+
+  /* ---- Keyboard shortcut hint ---- */
+  .kbd-hint { font-size: 11px; color: var(--text-5); display: flex; align-items: center; gap: 4px; }
+  kbd { background: var(--bg-3); border: 0.5px solid var(--border); border-radius: 4px; padding: 1px 5px; font-family: inherit; font-size: 11px; color: var(--text-4); }
+
+  /* ---- Empty state ---- */
+  .empty-state { display: flex; flex-direction: column; align-items: center; padding: 40px 20px; text-align: center; }
+  .empty-state-icon { width: 48px; height: 48px; border-radius: 14px; background: var(--bg-2); border: 0.5px solid var(--border); display: flex; align-items: center; justify-content: center; color: var(--text-5); margin-bottom: 14px; }
+  .empty-state-title { font-family: var(--font-display); font-size: 15px; color: var(--text-3); margin-bottom: 6px; }
+  .empty-state-desc { font-size: 12px; color: var(--text-5); line-height: 1.6; max-width: 180px; }
+
+  .history-list::-webkit-scrollbar, .content::-webkit-scrollbar { width: 4px; }
+  .history-list::-webkit-scrollbar-track, .content::-webkit-scrollbar-track { background: transparent; }
+  .history-list::-webkit-scrollbar-thumb, .content::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+  /* ---- Auth modal ---- */
+  .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(8,8,7,0.6); backdrop-filter: blur(3px); z-index: 200; align-items: center; justify-content: center; }
+  .modal-overlay.open { display: flex; animation: modalfade 0.18s ease; }
+  @keyframes modalfade { from { opacity: 0 } to { opacity: 1 } }
+  .modal-box { width: 320px; background: var(--bg-2); border: 0.5px solid var(--border); border-radius: 14px; padding: 24px; box-shadow: 0 20px 60px rgba(0,0,0,0.4); animation: modalrise 0.22s cubic-bezier(.2,.7,.3,1); }
+  @keyframes modalrise { from { opacity: 0; transform: translateY(8px) scale(0.98) } to { opacity: 1; transform: translateY(0) scale(1) } }
+  .modal-mark { width: 32px; height: 32px; border-radius: 8px; background: var(--accent); display: flex; align-items: center; justify-content: center; margin-bottom: 14px; }
+  .modal-title { font-family: var(--font-display); font-size: 19px; font-weight: 500; color: var(--text); margin-bottom: 4px; }
+  .modal-sub { font-size: 12px; color: var(--text-4); margin-bottom: 18px; }
+  .modal-field { margin-bottom: 12px; }
+  .modal-label { font-size: 11px; color: var(--text-4); margin-bottom: 5px; display: block; }
+  .modal-input { width: 100%; background: var(--bg-3); border: 0.5px solid var(--border); border-radius: 7px; padding: 9px 10px; font-size: 13px; color: var(--text); font-family: inherit; outline: none; }
+  .modal-input:focus { border-color: var(--text-4); }
+  .modal-error { font-size: 12px; color: #e24b4a; margin-bottom: 10px; display: none; }
+  .modal-submit { width: 100%; background: var(--accent); color: var(--accent-text); border: none; border-radius: 8px; padding: 10px; font-size: 13px; font-weight: 500; cursor: pointer; font-family: inherit; margin-top: 4px; }
+  .modal-submit:hover { background: var(--accent-hover); }
+  .modal-submit:disabled { opacity: 0.5; cursor: not-allowed; }
+  .modal-switch { font-size: 12px; color: var(--text-4); text-align: center; margin-top: 14px; }
+  .modal-switch button { background: none; border: none; color: var(--accent); cursor: pointer; font-family: inherit; font-size: 12px; padding: 0; }
+  .modal-close { float: right; background: none; border: none; color: var(--text-4); cursor: pointer; font-size: 16px; line-height: 1; }
+  .modal-close:hover { color: var(--text-2); }
+
+  /* ---- Floating tutorial widget ---- */
+  .tut-float { position: fixed; width: 230px; bottom: 26px; right: 26px; z-index: 150; background: var(--bg-2); border: 0.5px solid var(--border); border-radius: 12px; box-shadow: 0 16px 40px rgba(0,0,0,0.4); overflow: hidden; user-select: none; animation: tutrise 0.3s cubic-bezier(.2,.7,.3,1); }
+  @keyframes tutrise { from { opacity: 0; transform: translateY(14px) scale(0.96) } to { opacity: 1; transform: translateY(0) scale(1) } }
+  .tut-float-head { display: flex; align-items: center; justify-content: space-between; padding: 9px 10px; background: var(--bg-3); border-bottom: 0.5px solid var(--border); cursor: grab; }
+  .tut-float-head:active { cursor: grabbing; }
+  .tut-traffic { display: flex; gap: 5px; margin-right: 8px; }
+  .tut-traffic span { width: 7px; height: 7px; border-radius: 50%; display: inline-block; }
+  .tut-traffic span:nth-child(1) { background: #e2564b; }
+  .tut-traffic span:nth-child(2) { background: #d6a02a; }
+  .tut-traffic span:nth-child(3) { background: #5fb24a; }
+  .tut-float-title { font-size: 11px; color: var(--text-3); display: flex; align-items: center; gap: 6px; }
+  .tut-float-dot { width: 6px; height: 6px; border-radius: 50%; background: #e24b4a; animation: tutpulse 1.4s ease-in-out infinite; }
+  @keyframes tutpulse { 0%,100%{opacity:1} 50%{opacity:.3} }
+  .tut-float-close { background: none; border: none; color: var(--text-4); cursor: pointer; font-size: 14px; line-height: 1; padding: 2px 4px; }
+  .tut-float-close:hover { color: var(--text-2); }
+  .tut-screen { position: relative; aspect-ratio: 16/10; background: var(--bg); margin: 10px; border-radius: 8px; border: 0.5px solid var(--border); overflow: hidden; }
+  .tut-mock { position: absolute; inset: 0; padding: 10px; font-size: 6px; }
+  .tut-mock-bar { height: 5px; background: var(--bg-3); border-radius: 2px; margin-bottom: 6px; width: 40%; }
+  .tut-mock-box { background: var(--bg-3); border: 0.5px solid var(--border); border-radius: 4px; height: 26px; margin-bottom: 6px; display: flex; align-items: center; padding: 0 6px; gap: 4px; }
+  .tut-mock-line { height: 3px; background: var(--text-5); border-radius: 2px; flex: 1; }
+  .tut-cursor { position: absolute; width: 10px; height: 10px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 0 4px rgba(200,240,96,0.25); transition: top 0.6s ease, left 0.6s ease, opacity 0.3s; }
+  .tut-caption { padding: 8px 12px 12px; font-size: 11px; color: var(--text-3); line-height: 1.4; min-height: 30px; }
+  .tut-progress { display: flex; gap: 4px; padding: 0 12px 10px; }
+  .tut-progress-bar { height: 2px; flex: 1; background: var(--border); border-radius: 2px; overflow: hidden; }
+  .tut-progress-fill { height: 100%; width: 0%; background: var(--accent); }
+  .tut-reopen { position: fixed; bottom: 26px; right: 26px; z-index: 150; background: var(--bg-2); border: 0.5px solid var(--border); border-radius: 50%; width: 44px; height: 44px; display: none; align-items: center; justify-content: center; cursor: pointer; color: var(--text-3); box-shadow: 0 6px 20px rgba(0,0,0,0.3); }
+  .tut-reopen:hover { color: var(--text); }
+
+  /* ---- Settings slide-in panel ---- */
+  .settings-overlay { display: none; position: fixed; inset: 0; background: rgba(8,8,7,0.5); backdrop-filter: blur(2px); z-index: 220; }
+  .settings-overlay.open { display: block; animation: modalfade 0.18s ease; }
+  .settings-panel { position: fixed; top: 0; right: -380px; width: 380px; max-width: 90vw; height: 100vh; background: var(--bg-2); border-left: 0.5px solid var(--border); z-index: 221; display: flex; flex-direction: column; transition: right 0.26s cubic-bezier(.2,.7,.3,1); box-shadow: -16px 0 40px rgba(0,0,0,0.3); }
+  .settings-overlay.open .settings-panel { right: 0; }
+  .settings-head { display: flex; align-items: center; justify-content: space-between; padding: 18px 20px; border-bottom: 0.5px solid var(--border); flex-shrink: 0; }
+  .settings-head-title { font-family: var(--font-display); font-size: 18px; color: var(--text); }
+  .settings-close { background: none; border: none; color: var(--text-4); cursor: pointer; font-size: 18px; line-height: 1; padding: 4px; }
+  .settings-close:hover { color: var(--text-2); }
+  .settings-tabs { display: flex; gap: 4px; padding: 12px 20px 0; border-bottom: 0.5px solid var(--border); flex-shrink: 0; }
+  .settings-tab { font-size: 12px; color: var(--text-4); background: none; border: none; cursor: pointer; font-family: inherit; padding: 8px 10px 12px; border-bottom: 2px solid transparent; margin-bottom: -1px; }
+  .settings-tab:hover { color: var(--text-2); }
+  .settings-tab.active { color: var(--text); border-bottom-color: var(--accent); }
+  .settings-body { flex: 1; overflow-y: auto; padding: 22px 20px 32px; }
+  .settings-section { display: none; }
+  .settings-section.active { display: block; }
+  .settings-group { margin-bottom: 26px; }
+  .settings-group-title { font-size: 11px; color: var(--text-4); letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 10px; }
+  .settings-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 0; border-bottom: 0.5px solid var(--border-2); }
+  .settings-row:last-child { border-bottom: none; }
+  .settings-row-label { font-size: 13px; color: var(--text-2); }
+  .settings-row-desc { font-size: 11px; color: var(--text-4); margin-top: 2px; }
+
+  .seg-control { display: flex; background: var(--bg-3); border: 0.5px solid var(--border); border-radius: 9px; padding: 3px; gap: 2px; }
+  .seg-option { flex: 1; text-align: center; font-size: 12px; color: var(--text-4); padding: 7px 8px; border-radius: 7px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 5px; }
+  .seg-option.active { background: var(--bg-2); color: var(--text); box-shadow: 0 1px 4px rgba(0,0,0,0.2); }
+
+  .settings-input { width: 100%; background: var(--bg-3); border: 0.5px solid var(--border); border-radius: 7px; padding: 9px 10px; font-size: 13px; color: var(--text); font-family: inherit; outline: none; margin-bottom: 10px; }
+  .settings-input:focus { border-color: var(--text-4); }
+  .settings-label { font-size: 11px; color: var(--text-4); margin-bottom: 5px; display: block; }
+  .settings-btn { font-size: 12px; background: var(--bg-3); border: 0.5px solid var(--border); color: var(--text-2); padding: 8px 14px; border-radius: 7px; cursor: pointer; font-family: inherit; }
+  .settings-btn:hover { border-color: var(--text-4); }
+  .settings-btn.primary { background: var(--accent); color: var(--accent-text); border: none; }
+  .settings-btn.primary:hover { background: var(--accent-hover); }
+  .settings-btn.danger { color: #e24b4a; border-color: #3a1c1c; }
+  .settings-btn.danger:hover { background: #1e0a0a; }
+  .settings-select { width: 100%; background: var(--bg-3); border: 0.5px solid var(--border); border-radius: 7px; padding: 9px 10px; font-size: 13px; color: var(--text); font-family: inherit; outline: none; }
+  .settings-msg { font-size: 12px; margin-bottom: 10px; display: none; }
+  .settings-msg.error { color: #e24b4a; }
+  .settings-msg.success { color: var(--accent); }
+  .settings-guest-note { font-size: 12px; color: var(--text-4); line-height: 1.6; background: var(--bg-3); border: 0.5px solid var(--border); border-radius: 8px; padding: 12px 14px; }
+  .settings-guest-note button { color: var(--accent); background: none; border: none; cursor: pointer; font-family: inherit; padding: 0; font-size: 12px; }
+  .danger-zone { border: 0.5px solid #3a1c1c; border-radius: 9px; padding: 14px; margin-top: 4px; }
+  .danger-zone-title { font-size: 12px; color: #e24b4a; margin-bottom: 4px; }
+  .danger-zone-desc { font-size: 11px; color: var(--text-4); margin-bottom: 12px; line-height: 1.5; }
+</style>
+</head>
+<body>
+ 
+<div class="topbar">
+  <div class="logo">
+    <div class="logo-mark">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 13L8 3L13 13M5.5 9h5" stroke="var(--accent-text)" stroke-width="1.8" stroke-linecap="round"/></svg>
+    </div>
+    <span class="logo-name">Actio</span>
+    <span class="logo-badge">beta</span>
+  </div>
+  <div class="nav-right">
+    <button class="nav-link" onclick="showPage('landing')">Home</button>
+    <button class="nav-link active" id="appNavLink" onclick="showPage('app')">App</button>
+    <button class="theme-toggle" id="settingsToggle" onclick="openSettings()" title="Settings">
+      <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><path d="M7.5 1.5l1 1.8 2-.6.6 2 2 .6-.6 2 1.4 1.7-1.4 1.7.6 2-2 .6-.6 2-2-.6-1 1.8-1-1.8-2 .6-.6-2-2-.6.6-2-1.4-1.7 1.4-1.7-.6-2 2-.6.6-2z" stroke="currentColor" stroke-width="1.1" stroke-linejoin="round"/><circle cx="7.5" cy="7.5" r="2.2" stroke="currentColor" stroke-width="1.1"/></svg>
+    </button>
+  </div>
+</div>
+ 
+<div class="layout" id="appLayout">
+ 
+  <div class="sidebar">
+    <div class="account-box">
+      <div class="account-signed-out" id="signedOutBox">
+        <span class="account-text">Not signed in</span>
+        <button class="signin-btn" onclick="signIn()">Sign in</button>
+      </div>
+      <div class="account-signed-in" id="signedInBox">
+        <div class="account-user">
+          <div class="account-avatar" id="userAvatar">U</div>
+          <span class="account-name" id="userName">User</span>
+        </div>
+        <button class="signout-link" onclick="signOut()">Sign out</button>
+      </div>
+    </div>
+    <div style="padding:8px 16px 0;font-size:11px;color:var(--text-5)" id="guestHint">You're browsing as a guest — sign in anytime to save your account.</div>
+ 
+    <div class="sidebar-header">
+      <span class="sidebar-title">History</span>
+      <button class="clear-btn" onclick="clearHistory()">Clear all</button>
+    </div>
+    <div class="history-search-wrap"><input class="history-search" id="historySearch" placeholder="Search history..." oninput="renderHistory(null)" /></div>
+    <div class="history-list" id="historyList"></div>
+ 
+    <div class="tutorial-panel">
+      <div class="tutorial-title">How to use</div>
+      <div class="tut-step">
+        <div class="tut-num">1</div>
+        <div>
+          <div class="tut-text">Type anything — short or long</div>
+          <div class="tut-example">"call John tomorrow re: budget"</div>
+        </div>
+      </div>
+      <div class="tut-step">
+        <div class="tut-num">2</div>
+        <div><div class="tut-text">Or upload a .txt meeting transcript</div></div>
+      </div>
+      <div class="tut-step">
+        <div class="tut-num">3</div>
+        <div>
+          <div class="tut-text">Hit Extract — get tasks, owners, deadlines</div>
+          <button class="tut-video-link" onclick="openTutFloat()">Watch the quick walkthrough →</button>
+        </div>
+      </div>
+    </div>
+  </div>
+ 
+  <div class="content" id="appContent">
+    <div class="hero-tag">AI-powered</div>
+    <div class="hero-title">Turn meetings into<br>clear action items</div>
+    <div class="hero-sub">Paste notes, upload a file, or type a quick phrase. Actio understands and extracts every task, owner, and priority.</div>
+ 
+    <div class="upload-zone" id="uploadZone" onclick="document.getElementById('fileInput').click()" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event)">
+      <input type="file" id="fileInput" accept=".txt" onchange="handleFile(event)" />
+      <svg class="upload-icon" viewBox="0 0 24 24" fill="none"><path d="M12 4v12m0-12 4 4m-4-4-4 4M5 16v2a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <div class="upload-text"><span>Choose a .txt file</span> or drag and drop</div>
+      <div class="upload-hint">Supports .txt files</div>
+    </div>
+ 
+    <div class="input-wrap">
+      <div class="input-header">
+        <div class="input-dots"><div class="input-dot"></div><div class="input-dot"></div><div class="input-dot"></div></div>
+        <span class="input-label">Notes / Transcript</span>
+      </div>
+      <textarea id="transcript" placeholder='Try "call John tomorrow re: budget" or paste full meeting notes...'></textarea>
+    </div>
+ 
+    <div class="actions">
+      <button class="btn-main" id="extractBtn" onclick="extract()">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 1.5L8.5 5.5H12.5L9.5 8L10.5 12L7 9.5L3.5 12L4.5 8L1.5 5.5H5.5L7 1.5Z" fill="var(--accent-text)"/></svg>
+        Extract action items
+      </button>
+      <span class="kbd-hint"><kbd>Ctrl</kbd><kbd>↵</kbd> to extract</span>
+    </div>
+ 
+    <div id="loading" class="loading">
+      <div class="dot"></div><div class="dot"></div><div class="dot"></div>
+      <span>Extracting action items...</span>
+    </div>
+ 
+    <div id="results" style="display:none">
+      <div class="divider">Results</div>
+      <div id="results-inner"></div>
+    </div>
+  </div>
+ 
+</div>
+ 
+<div class="landing" id="landingPage">
+  <div class="landing-hero">
+    <div class="landing-tag">AI-powered · Free to use</div>
+    <div class="landing-title">
+  Meetings end.<br>
+  <span class="nowrap">Action items <em>don't</em> get lost.</span>
+</div>
+    <div class="landing-sub">Actio reads your meeting notes and instantly pulls out every task, who owns it, and when it's due. No more chasing people for follow-ups.</div>
+    <div class="landing-cta-row">
+      <button class="landing-cta" onclick="showPage('app')">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 1.5L8.5 5.5H12.5L9.5 8L10.5 12L7 9.5L3.5 12L4.5 8L1.5 5.5H5.5L7 1.5Z" fill="var(--accent-text)"/></svg>
+        Try Actio free
+      </button>
+      <span class="landing-cta-note">No account needed</span>
+    </div>
+  </div>
+
+  <div class="transform-vis">
+    <div class="tv-input">"Send the report to John before EOD tomorrow — urgent. Also schedule budget review with Sarah next week."</div>
+    <div class="tv-arrow">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 2v10m0 0L4 8m4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </div>
+    <div class="tv-cards-row">
+      <div class="tv-card">
+        <div class="tv-card-task">Send the report to John</div>
+        <div class="tv-card-meta">
+          <span class="tv-badge">John</span>
+          <span class="tv-badge">Tomorrow, EOD</span>
+          <span class="tv-badge high">high</span>
+        </div>
+      </div>
+      <div class="tv-card">
+        <div class="tv-card-task">Schedule budget review with Sarah</div>
+        <div class="tv-card-meta">
+          <span class="tv-badge">Sarah</span>
+          <span class="tv-badge">Next week</span>
+          <span class="tv-badge">medium</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="landing-features">
+    <div class="feature-card">
+      <div class="feature-icon"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 3h10M2 7h7M2 11h4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg></div>
+      <div class="feature-title">Works with anything</div>
+      <div class="feature-desc">Short phrases, full transcripts, uploaded files — Actio understands them all.</div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 1v6l4 2" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/><circle cx="7" cy="7" r="5.5" stroke="currentColor" stroke-width="1.4"/></svg></div>
+      <div class="feature-title">Smart priorities</div>
+      <div class="feature-desc">Automatically detects urgency and labels tasks as high, medium, or low priority.</div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 7a5 5 0 1 1 1.5 3.6M2 7v3.5M2 7h3.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+      <div class="feature-title">Meeting history</div>
+      <div class="feature-desc">Every extraction is saved and named. Come back anytime and pick up where you left off.</div>
+    </div>
+  </div>
+
+  <div class="landing-video-section">
+    <div class="landing-video-title">Watch how it works</div>
+    <div class="video-placeholder" id="videoPlaceholder" onclick="openTutFloat()" style="cursor:pointer">
+      <div class="video-play">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M4 2.5v9l8-4.5-8-4.5z" fill="currentColor"/></svg>
+      </div>
+      <div class="video-placeholder-text">Click to play the floating walkthrough</div>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST STACK -->
+<div class="toast-stack" id="toastStack"></div>
+
+<!-- ONBOARDING OVERLAY -->
+<div class="ob-overlay" id="obOverlay">
+  <div class="ob-backdrop" onclick="skipOnboarding()"></div>
+  <div class="ob-hole" id="obHole"></div>
+  <div class="ob-tip" id="obTip">
+    <div class="ob-step" id="obStep">Step 1 of 3</div>
+    <div class="ob-title" id="obTitle"></div>
+    <div class="ob-desc" id="obDesc"></div>
+    <div class="ob-btns">
+      <button class="ob-skip" onclick="skipOnboarding()">Skip tour</button>
+      <div class="ob-dots" id="obDots"></div>
+      <button class="ob-next" id="obNext" onclick="nextObStep()">Next →</button>
+    </div>
+  </div>
+</div>
+
+<!-- SETTINGS PANEL -->
+<div class="settings-overlay" id="settingsOverlay" onclick="if(event.target===this) closeSettings()">
+  <div class="settings-panel">
+    <div class="settings-head">
+      <div class="settings-head-title">Settings</div>
+      <button class="settings-close" onclick="closeSettings()">&times;</button>
+    </div>
+    <div class="settings-tabs">
+      <button class="settings-tab active" data-tab="appearance" onclick="setSettingsTab('appearance')">Appearance</button>
+      <button class="settings-tab" data-tab="account" onclick="setSettingsTab('account')">Account</button>
+      <button class="settings-tab" data-tab="data" onclick="setSettingsTab('data')">Data & History</button>
+    </div>
+    <div class="settings-body">
+
+      <!-- APPEARANCE -->
+      <div class="settings-section active" id="tab-appearance">
+        <div class="settings-group">
+          <div class="settings-group-title">Theme</div>
+          <div class="seg-control" id="themeSeg">
+            <div class="seg-option" data-theme="system" onclick="setThemePref('system')">
+              <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><rect x="1" y="2" width="11" height="7" rx="1" stroke="currentColor" stroke-width="1.1"/><path d="M4.5 11h4" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/></svg>
+              System
+            </div>
+            <div class="seg-option" data-theme="light" onclick="setThemePref('light')">
+              <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><circle cx="6.5" cy="6.5" r="2.6" stroke="currentColor" stroke-width="1.1"/><path d="M6.5 1v1.3M6.5 10.7V12M12 6.5h-1.3M2.3 6.5H1M10.2 2.8l-.9.9M3.7 9.3l-.9.9M10.2 10.2l-.9-.9M3.7 3.7l-.9-.9" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/></svg>
+              Light
+            </div>
+            <div class="seg-option" data-theme="dark" onclick="setThemePref('dark')">
+              <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M11 7.6A5 5 0 1 1 5.4 2a4 4 0 0 0 5.6 5.6z" stroke="currentColor" stroke-width="1.1" stroke-linejoin="round"/></svg>
+              Dark
+            </div>
+          </div>
+          <div class="settings-row-desc" style="margin-top:8px">System matches your device's appearance automatically.</div>
+        </div>
+      </div>
+
+      <!-- ACCOUNT -->
+      <div class="settings-section" id="tab-account">
+        <div id="accountSignedIn" style="display:none">
+          <div class="settings-group">
+            <div class="settings-group-title">Profile</div>
+            <div class="settings-msg" id="profileMsg"></div>
+            <label class="settings-label">Name</label>
+            <input class="settings-input" id="settingsName" type="text" />
+            <label class="settings-label">Email</label>
+            <input class="settings-input" id="settingsEmail" type="email" />
+            <button class="settings-btn primary" onclick="saveProfile()">Save changes</button>
+          </div>
+          <div class="settings-group">
+            <div class="settings-group-title">Password</div>
+            <div class="settings-msg" id="passwordMsg"></div>
+            <label class="settings-label">Current password</label>
+            <input class="settings-input" id="currentPassword" type="password" />
+            <label class="settings-label">New password</label>
+            <input class="settings-input" id="newPassword" type="password" />
+            <button class="settings-btn" onclick="changePassword()">Update password</button>
+          </div>
+          <div class="settings-group">
+            <div class="settings-group-title">Session</div>
+            <button class="settings-btn" onclick="signOut(); closeSettings();">Sign out</button>
+          </div>
+          <div class="settings-group">
+            <div class="danger-zone">
+              <div class="danger-zone-title">Delete account</div>
+              <div class="danger-zone-desc">This permanently deletes your account. Your local history stays on this device.</div>
+              <button class="settings-btn danger" onclick="deleteAccount()">Delete my account</button>
+            </div>
+          </div>
+        </div>
+        <div id="accountSignedOut" style="display:none">
+          <div class="settings-guest-note">
+            You're browsing as a guest. <button onclick="closeSettings(); signIn();">Sign in or create an account</button> to manage your profile and password.
+          </div>
+        </div>
+      </div>
+
+      <!-- DATA & HISTORY -->
+      <div class="settings-section" id="tab-data">
+        <div class="settings-group">
+          <div class="settings-group-title">Export</div>
+          <div class="settings-row" style="border:none;padding-top:0">
+            <div>
+              <div class="settings-row-label">Download your history</div>
+              <div class="settings-row-desc">Saves all extractions as a JSON file</div>
+            </div>
+            <button class="settings-btn" onclick="exportHistory()">Export</button>
+          </div>
+        </div>
+        <div class="settings-group">
+          <div class="settings-group-title">Auto-clear history</div>
+          <label class="settings-label">Automatically delete extractions older than</label>
+          <select class="settings-select" id="autoClearSelect" onchange="setAutoClear(this.value)">
+            <option value="never">Never</option>
+            <option value="7">7 days</option>
+            <option value="30">30 days</option>
+            <option value="90">90 days</option>
+          </select>
+        </div>
+        <div class="settings-group">
+          <div class="danger-zone">
+            <div class="danger-zone-title">Clear all history</div>
+            <div class="danger-zone-desc">Removes every saved extraction from this device. Cannot be undone.</div>
+            <button class="settings-btn danger" onclick="clearHistory()">Clear all history</button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+
+<div class="modal-overlay" id="authModal">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeAuthModal()">&times;</button>
+    <div class="modal-mark"><svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M3 13L8 3L13 13M5.5 9h5" stroke="var(--accent-text)" stroke-width="1.8" stroke-linecap="round"/></svg></div>
+    <div class="modal-title" id="authModalTitle">Sign in</div>
+    <div class="modal-sub" id="authModalSub">Welcome back to Actio.</div>
+    <div class="modal-error" id="authError"></div>
+    <form id="authForm" onsubmit="handleAuthSubmit(event)">
+      <div class="modal-field" id="nameField" style="display:none">
+        <label class="modal-label">Name</label>
+        <input class="modal-input" id="authName" type="text" autocomplete="name" />
+      </div>
+      <div class="modal-field">
+        <label class="modal-label">Email</label>
+        <input class="modal-input" id="authEmail" type="email" autocomplete="email" required />
+      </div>
+      <div class="modal-field">
+        <label class="modal-label">Password</label>
+        <input class="modal-input" id="authPassword" type="password" autocomplete="current-password" required />
+      </div>
+      <button class="modal-submit" id="authSubmitBtn" type="submit">Sign in</button>
+    </form>
+    <div class="modal-switch" id="authSwitch">
+      Don't have an account? <button onclick="setAuthMode('signup')">Sign up</button>
+    </div>
+  </div>
+</div>
+
+<!-- FLOATING TUTORIAL WIDGET -->
+<div class="tut-float" id="tutFloat">
+  <div class="tut-float-head" id="tutFloatHead">
+    <span class="tut-float-title"><span class="tut-traffic"><span></span><span></span><span></span></span>Quick walkthrough</span>
+    <button class="tut-float-close" onclick="closeTutFloat()" title="Minimize">&times;</button>
+  </div>
+  <div class="tut-screen">
+    <div class="tut-mock">
+      <div class="tut-mock-bar"></div>
+      <div class="tut-mock-box" id="tutBox1"><div class="tut-mock-line" style="max-width:60%"></div></div>
+      <div class="tut-mock-box" id="tutBox2" style="height:18px"><div class="tut-mock-line" style="max-width:40%"></div></div>
+      <div class="tut-mock-box" id="tutBox3" style="height:14px;width:50%;justify-content:center"><div class="tut-mock-line" style="max-width:70%"></div></div>
+    </div>
+    <div class="tut-cursor" id="tutCursor" style="top:20px;left:20px;opacity:0"></div>
+  </div>
+  <div class="tut-progress">
+    <div class="tut-progress-bar"><div class="tut-progress-fill" id="tutFill1"></div></div>
+    <div class="tut-progress-bar"><div class="tut-progress-fill" id="tutFill2"></div></div>
+    <div class="tut-progress-bar"><div class="tut-progress-fill" id="tutFill3"></div></div>
+  </div>
+  <div class="tut-caption" id="tutCaption">Type a note or paste a transcript...</div>
+</div>
+<div class="tut-reopen" id="tutReopen" onclick="openTutFloat()" title="Show walkthrough">
+  <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M5 3.5v9l8-4.5-8-4.5z" fill="currentColor"/></svg>
+</div>
+<script>
+const TODAY = new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+ 
+// THEME — System / Light / Dark, like Instagram/Facebook
+const systemSchemeQuery = window.matchMedia('(prefers-color-scheme: light)');
+
+function resolveTheme(pref) {
+  if (pref === 'system') return systemSchemeQuery.matches ? 'light' : 'dark';
+  return pref;
+}
+function applyTheme(pref) {
+  const resolved = resolveTheme(pref);
+  document.body.classList.toggle('light', resolved === 'light');
+  localStorage.setItem('actio-theme-pref', pref);
+  document.querySelectorAll('#themeSeg .seg-option').forEach(el => {
+    el.classList.toggle('active', el.dataset.theme === pref);
+  });
+}
+function setThemePref(pref) {
+  applyTheme(pref);
+}
+systemSchemeQuery.addEventListener('change', () => {
+  const pref = localStorage.getItem('actio-theme-pref') || 'system';
+  if (pref === 'system') applyTheme('system');
+});
+applyTheme(localStorage.getItem('actio-theme-pref') || 'system');
+ 
+// PAGE NAV
+function showPage(page) {
+  const app = document.getElementById('appLayout');
+  const landing = document.getElementById('landingPage');
+  document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+  if (page === 'landing') {
+    app.style.display = 'none';
+    landing.style.display = 'flex';
+    document.querySelectorAll('.nav-link')[0].classList.add('active');
+  } else {
+    app.style.display = 'flex';
+    landing.style.display = 'none';
+    document.getElementById('appNavLink').classList.add('active');
+  }
+}
+ 
+// ACCOUNT (real backend auth via cookie session)
+let authMode = 'login';
+let currentUser = null;
+
+function setAuthMode(mode) {
+  authMode = mode;
+  document.getElementById('authError').style.display = 'none';
+  document.getElementById('nameField').style.display = mode === 'signup' ? 'block' : 'none';
+  document.getElementById('authModalTitle').textContent = mode === 'signup' ? 'Create your account' : 'Sign in';
+  document.getElementById('authModalSub').textContent = mode === 'signup' ? 'Save your history across devices.' : 'Welcome back to Actio.';
+  document.getElementById('authSubmitBtn').textContent = mode === 'signup' ? 'Sign up' : 'Sign in';
+  document.getElementById('authSwitch').innerHTML = mode === 'signup'
+    ? `Already have an account? <button onclick="setAuthMode('login')">Sign in</button>`
+    : `Don't have an account? <button onclick="setAuthMode('signup')">Sign up</button>`;
+}
+
+function signIn() {
+  setAuthMode('login');
+  document.getElementById('authModal').classList.add('open');
+}
+function closeAuthModal() {
+  document.getElementById('authModal').classList.remove('open');
+}
+
+async function handleAuthSubmit(evt) {
+  evt.preventDefault();
+  const errEl = document.getElementById('authError');
+  errEl.style.display = 'none';
+  const btn = document.getElementById('authSubmitBtn');
+  const body = {
+    email: document.getElementById('authEmail').value,
+    password: document.getElementById('authPassword').value,
+  };
+  if (authMode === 'signup') body.name = document.getElementById('authName').value;
+
+  btn.disabled = true;
+  try {
+    const res = await fetch(`/api/${authMode === 'signup' ? 'signup' : 'login'}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify(body),
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      errEl.textContent = data.error || 'Something went wrong.';
+      errEl.style.display = 'block';
+      return;
+    }
+    currentUser = data.user;
+    renderAccount();
+    closeAuthModal();
+    document.getElementById('authForm').reset();
+    showToast(`Welcome${authMode === 'signup' ? ' to Actio' : ' back'}, ${currentUser.name}!`, 'success');
+  } catch (e) {
+    errEl.textContent = 'Could not reach the server. Is it running?';
+    errEl.style.display = 'block';
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+async function signOut() {
+  await fetch('/api/logout', { method: 'POST', credentials: 'include' });
+  currentUser = null;
+  renderAccount();
+  showToast('Signed out', 'info');
+}
+
+async function checkSession() {
+  try {
+    const res = await fetch('/api/me', { credentials: 'include' });
+    const data = await res.json();
+    currentUser = data.user;
+  } catch (e) {
+    currentUser = null;
+  }
+  renderAccount();
+}
+
+function renderAccount() {
+  const guestHint = document.getElementById('guestHint');
+  if (currentUser) {
+    document.getElementById('signedOutBox').style.display = 'none';
+    document.getElementById('signedInBox').style.display = 'flex';
+    document.getElementById('userName').textContent = currentUser.name;
+    document.getElementById('userAvatar').textContent = currentUser.name.trim()[0].toUpperCase();
+    guestHint.style.display = 'none';
+  } else {
+    document.getElementById('signedOutBox').style.display = 'flex';
+    document.getElementById('signedInBox').style.display = 'none';
+    guestHint.style.display = 'block';
+  }
+}
+ 
+// FILE UPLOAD
+function handleDragOver(e) { e.preventDefault(); document.getElementById('uploadZone').classList.add('drag'); }
+function handleDragLeave() { document.getElementById('uploadZone').classList.remove('drag'); }
+function handleDrop(e) {
+  e.preventDefault();
+  document.getElementById('uploadZone').classList.remove('drag');
+  const file = e.dataTransfer.files[0];
+  if (file) readFile(file);
+}
+function handleFile(e) { const file = e.target.files[0]; if (file) readFile(file); }
+function readFile(file) {
+  const reader = new FileReader();
+  reader.onload = (e) => { document.getElementById('transcript').value = e.target.result; };
+  reader.readAsText(file);
+}
+ 
+// HISTORY
+function getHistory() {
+  try { return JSON.parse(localStorage.getItem('actio-history') || '[]'); } catch { return []; }
+}
+function setHistory(h) { localStorage.setItem('actio-history', JSON.stringify(h)); }
+ 
+function saveToHistory(transcript, items) {
+  const history = getHistory();
+  const entry = {
+    id: Date.now(),
+    name: transcript.trim().slice(0, 40) + (transcript.length > 40 ? '...' : ''),
+    date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }),
+    count: items.length,
+    items
+  };
+  history.unshift(entry);
+  if (history.length > 50) history.pop();
+  setHistory(history);
+  renderHistory(entry.id);
+}
+ 
+function clearHistory() {
+  if (!getHistory().length) return;
+  if (!confirm('Delete all history?')) return;
+  setHistory([]);
+  renderHistory(null);
+}
+
+// auto-clear (Data & History setting)
+function getAutoClearDays() { return localStorage.getItem('actio-autoclear') || 'never'; }
+function setAutoClear(val) {
+  localStorage.setItem('actio-autoclear', val);
+  pruneHistory();
+  renderHistory(null);
+}
+function pruneHistory() {
+  const days = getAutoClearDays();
+  if (days === 'never') return;
+  const cutoff = Date.now() - Number(days) * 24 * 60 * 60 * 1000;
+  setHistory(getHistory().filter(h => h.id >= cutoff));
+}
+function exportHistory() {
+  const history = getHistory();
+  const blob = new Blob([JSON.stringify(history, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `actio-history-${new Date().toISOString().slice(0, 10)}.json`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+}
+ 
+function deleteHistoryItem(id, evt) {
+  evt.stopPropagation();
+  const history = getHistory().filter(h => h.id !== id);
+  setHistory(history);
+  renderHistory(null);
+}
+ 
+function renameHistoryItem(id, newName) {
+  const history = getHistory();
+  const entry = history.find(h => h.id === id);
+  if (entry && newName.trim()) {
+    entry.name = newName.trim();
+    setHistory(history);
+  }
+}
+ 
+function renderHistory(activeId) {
+  const q = (document.getElementById('historySearch')?.value || '').toLowerCase();
+  const history = getHistory().filter(h =>
+    !q || h.name.toLowerCase().includes(q) ||
+    (h.items || []).some(i => i.task.toLowerCase().includes(q) || i.owner.toLowerCase().includes(q))
+  );
+  const el = document.getElementById('historyList');
+  if (!getHistory().length) {
+    el.innerHTML = `<div class="empty-state">
+      <div class="empty-state-icon"><svg width="22" height="22" viewBox="0 0 22 22" fill="none"><path d="M3 19L11 3l8 16M6 13h10" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg></div>
+      <div class="empty-state-title">Nothing yet</div>
+      <div class="empty-state-desc">Your extractions will appear here after your first run.</div>
+    </div>`;
+    return;
+  }
+  if (!history.length) {
+    el.innerHTML = `<div class="empty-state"><div class="empty-state-title">No matches</div><div class="empty-state-desc">Try a different search term.</div></div>`;
+    return;
+  }
+  el.innerHTML = history.map(h => {
+    const safeName = h.name.replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');
+    return '<div class="history-item ' + (h.id === activeId ? 'active' : '') + '" data-hid="' + h.id + '">'
+      + '<button class="history-del" data-hid="' + h.id + '" title="Delete">&times;</button>'
+      + '<input class="history-item-title" data-hid="' + h.id + '" value="' + safeName + '" />'
+      + '<div class="history-item-meta">' + h.date + ' &middot; ' + h.count + ' items</div>'
+      + '</div>';
+  }).join('');
+}
+ 
+function loadHistory(id, evt) {
+  const history = getHistory();
+  const entry = history.find(h => h.id === id);
+  if (!entry) return;
+  renderResults(entry.items, id);
+}
+ 
+// EXTRACT
+async function extract() {
+  const text = document.getElementById('transcript').value.trim();
+  if (!text) return;
+  const btn = document.getElementById('extractBtn');
+  btn.disabled = true;
+  document.getElementById('loading').style.display = 'flex';
+  document.getElementById('results').style.display = 'none';
+  try {
+    const res = await fetch('/extract', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ transcript: text, today: TODAY })
+    });
+    const items = await res.json();
+    saveToHistory(text, items);
+    renderResults(items, null);
+  } catch(e) {
+    document.getElementById('results-inner').innerHTML = `<p style="color:#e24b4a;font-size:14px">Something went wrong. Is the server running?</p>`;
+    document.getElementById('results').style.display = 'block';
+  } finally {
+    btn.disabled = false;
+    document.getElementById('loading').style.display = 'none';
+  }
+}
+ 
+function getTaskState(histId) {
+  try { return JSON.parse(localStorage.getItem(`actio-ts-${histId}`) || '{}'); } catch { return {}; }
+}
+function setTaskState(histId, state) {
+  localStorage.setItem(`actio-ts-${histId}`, JSON.stringify(state));
+}
+let _currentHistId = null;
+
+function toggleDone(histId, idx) {
+  const s = getTaskState(histId);
+  s[idx] = s[idx] || {};
+  s[idx].done = !s[idx].done;
+  setTaskState(histId, s);
+  const card = document.querySelector(`.card[data-idx="${idx}"]`);
+  if (card) card.classList.toggle('done', s[idx].done);
+  const check = card?.querySelector('.card-check');
+  if (check) check.innerHTML = s[idx].done ? '✓' : '';
+  showToast(s[idx].done ? 'Task marked done' : 'Task reopened', 'success');
+}
+
+function saveNote(histId, idx, val) {
+  const s = getTaskState(histId);
+  s[idx] = s[idx] || {};
+  s[idx].note = val;
+  setTaskState(histId, s);
+}
+
+function showNoteInput(histId, idx) {
+  const s = getTaskState(histId);
+  const note = s[idx]?.note || '';
+  const card = document.querySelector(`.card[data-idx="${idx}"]`);
+  const existing = card?.querySelector('.card-note-input');
+  if (existing) { existing.focus(); return; }
+  const ta = document.createElement('textarea');
+  ta.className = 'card-note-input';
+  ta.rows = 2;
+  ta.placeholder = 'Add a note…';
+  ta.value = note;
+  ta.oninput = () => saveNote(histId, idx, ta.value);
+  card?.querySelector('.card-body').appendChild(ta);
+  ta.focus();
+}
+
+function copyTaskCard(task, owner, deadline, priority) {
+  const text = `• ${task}\n  Owner: ${owner} | Due: ${deadline} | Priority: ${priority}`;
+  navigator.clipboard.writeText(text);
+  showToast('Task copied', 'success');
+}
+
+function exportCSV(items) {
+  const rows = [['Task','Owner','Deadline','Priority']];
+  items.forEach(i => rows.push([`"${i.task.replace(/"/g,'""')}"`, i.owner, i.deadline, i.priority]));
+  const csv = rows.map(r => r.join(',')).join('\n');
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `actio-${new Date().toISOString().slice(0,10)}.csv`;
+  document.body.appendChild(a); a.click(); a.remove();
+  URL.revokeObjectURL(url);
+  showToast('CSV downloaded', 'success');
+}
+
+function copyAllFormatted(items) {
+  const text = items.map(i => `• ${i.task}\n  Owner: ${i.owner}  |  Due: ${i.deadline}  |  Priority: ${i.priority}`).join('\n\n');
+  navigator.clipboard.writeText(text);
+  showToast('All tasks copied', 'success');
+}
+
+function renderResults(items, activeId) {
+  _currentHistId = activeId || _currentHistId || Date.now();
+  const el = document.getElementById('results');
+  const inner = document.getElementById('results-inner');
+
+  if (!items || !items.length) {
+    inner.innerHTML = `<div class="empty-state">
+      <div class="empty-state-icon"><svg width="22" height="22" viewBox="0 0 22 22" fill="none"><path d="M11 7v5m0 4h.01" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><circle cx="11" cy="11" r="9" stroke="currentColor" stroke-width="1.4"/></svg></div>
+      <div class="empty-state-title">Nothing found</div>
+      <div class="empty-state-desc">No action items detected. Try adding more detail to your notes.</div>
+    </div>`;
+    el.style.display = 'block'; return;
+  }
+
+  const high  = items.filter(i => i.priority === 'high').length;
+  const med   = items.filter(i => i.priority === 'medium').length;
+  const owners = [...new Set(items.map(i => i.owner).filter(o => o !== 'Unassigned'))];
+  const earliest = items.filter(i => i.deadline !== 'Not specified').map(i => i.deadline)[0];
+
+  const hid = _currentHistId;
+  const state = getTaskState(hid);
+
+  // stats bar
+  let statsHtml = `<div class="stats-bar">
+    <div class="stat-chip"><strong>${items.length}</strong> task${items.length !== 1 ? 's' : ''}</div>`;
+  if (high)  statsHtml += `<div class="stat-chip urgent"><strong>${high}</strong> high</div>`;
+  if (med)   statsHtml += `<div class="stat-chip"><strong>${med}</strong> medium</div>`;
+  if (owners.length) statsHtml += `<div class="stat-chip"><strong>${owners.length}</strong> owner${owners.length !== 1 ? 's' : ''}</div>`;
+  if (earliest) statsHtml += `<div class="stat-chip">earliest <strong>${earliest}</strong></div>`;
+  statsHtml += '</div>';
+
+  // summary + export bar
+  const plain = items.map(i => `• ${i.task} — ${i.owner} (${i.deadline})`).join('\n');
+  const summaryHtml = `<div class="summary">
+    <span class="summary-text"><strong>${items.length}</strong> action items${high ? ` · <span style="color:#e24b4a">${high} high priority</span>` : ''}</span>
+    <div class="summary-actions">
+      <button class="copy-btn" onclick="copyAllFormatted(window._lastItems)">Copy all</button>
+      <button class="copy-btn" onclick="exportCSV(window._lastItems)">CSV ↓</button>
+    </div>
+  </div>`;
+
+  // task cards
+  let cardsHtml = '<div class="cards">';
+  items.forEach((i, idx) => {
+    const pc = i.priority === 'high' ? 'b-high' : i.priority === 'medium' ? 'b-med' : 'b-low';
+    const isDone = !!(state[idx]?.done);
+    const note = state[idx]?.note || '';
+    cardsHtml += `<div class="card ${isDone ? 'done' : ''}" data-idx="${idx}" data-task="${i.task.replace(/"/g,'&quot;')}" data-owner="${i.owner}" data-deadline="${i.deadline}" data-priority="${i.priority}">
+      <div class="card-top">
+        <div class="card-check card-check-btn" data-idx="${idx}">${isDone ? '✓' : ''}</div>
+        <div class="card-body">
+          <div class="card-task">${i.task}</div>
+          <div class="card-meta">
+            <span class="badge b-owner">${i.owner}</span>
+            <span class="badge b-date">${i.deadline}</span>
+            <span class="badge ${pc}">${i.priority}</span>
+          </div>
+          <div class="card-note" style="${note ? '' : 'display:none'}">${note}</div>
+          <div class="card-actions">
+            <button class="card-act-btn card-note-btn" data-idx="${idx}">+ Note</button>
+            <button class="card-act-btn card-copy-btn" data-idx="${idx}">Copy</button>
+          </div>
+        </div>
+      </div>
+    </div>`;
+  });
+  cardsHtml += '</div>';
+
+  window._lastItems = items;
+  inner.innerHTML = statsHtml + summaryHtml + cardsHtml;
+  el.style.display = 'block';
+  if (activeId) renderHistory(activeId);
+}
+ 
+// FLOATING TUTORIAL WIDGET — small "flying screen" demo that loops through steps
+const tutSteps = [
+  { caption: 'Step 1 — Type a note or paste a transcript...', boxes: [1, 0, 0], cursor: { top: '34px', left: '40px' } },
+  { caption: 'Step 2 — Or drag & drop a .txt file to upload.', boxes: [1, 1, 0], cursor: { top: '58px', left: '60px' } },
+  { caption: 'Step 3 — Hit Extract to get tasks, owners & deadlines.', boxes: [1, 1, 1], cursor: { top: '84px', left: '90px' } },
+];
+let tutIndex = 0;
+let tutTimer = null;
+
+function renderTutStep() {
+  const step = tutSteps[tutIndex];
+  document.getElementById('tutCaption').textContent = step.caption;
+  [1, 2, 3].forEach((n, i) => {
+    document.getElementById(`tutBox${n}`).style.opacity = step.boxes[i] ? '1' : '0.25';
+  });
+  [1, 2, 3].forEach((n, i) => {
+    document.getElementById(`tutFill${n}`).style.width = i <= tutIndex ? '100%' : '0%';
+  });
+  const cursor = document.getElementById('tutCursor');
+  cursor.style.opacity = '1';
+  cursor.style.top = step.cursor.top;
+  cursor.style.left = step.cursor.left;
+}
+
+function startTutLoop() {
+  clearInterval(tutTimer);
+  tutIndex = 0;
+  renderTutStep();
+  tutTimer = setInterval(() => {
+    tutIndex = (tutIndex + 1) % tutSteps.length;
+    renderTutStep();
+  }, 2400);
+}
+
+function openTutFloat() {
+  document.getElementById('tutFloat').style.display = 'block';
+  document.getElementById('tutReopen').style.display = 'none';
+  startTutLoop();
+}
+function closeTutFloat() {
+  document.getElementById('tutFloat').style.display = 'none';
+  document.getElementById('tutReopen').style.display = 'flex';
+  clearInterval(tutTimer);
+}
+
+// drag-to-move for the floating widget
+(function enableTutDrag() {
+  const el = document.getElementById('tutFloat');
+  const handle = document.getElementById('tutFloatHead');
+  let dragging = false, offsetX = 0, offsetY = 0;
+  handle.addEventListener('mousedown', (e) => {
+    dragging = true;
+    const rect = el.getBoundingClientRect();
+    offsetX = e.clientX - rect.left;
+    offsetY = e.clientY - rect.top;
+    el.style.right = 'auto'; el.style.bottom = 'auto';
+    el.style.left = rect.left + 'px';
+    el.style.top = rect.top + 'px';
+  });
+  window.addEventListener('mousemove', (e) => {
+    if (!dragging) return;
+    el.style.left = Math.max(8, Math.min(window.innerWidth - el.offsetWidth - 8, e.clientX - offsetX)) + 'px';
+    el.style.top = Math.max(8, Math.min(window.innerHeight - el.offsetHeight - 8, e.clientY - offsetY)) + 'px';
+  });
+  window.addEventListener('mouseup', () => { dragging = false; });
+})();
+
+// ---------- SETTINGS PANEL ----------
+function openSettings() {
+  document.getElementById('settingsOverlay').classList.add('open');
+  populateAccountTab();
+  const sel = document.getElementById('autoClearSelect');
+  if (sel) sel.value = getAutoClearDays();
+}
+function closeSettings() {
+  document.getElementById('settingsOverlay').classList.remove('open');
+}
+function setSettingsTab(tab) {
+  document.querySelectorAll('.settings-tab').forEach(el => el.classList.toggle('active', el.dataset.tab === tab));
+  document.querySelectorAll('.settings-section').forEach(el => el.classList.toggle('active', el.id === `tab-${tab}`));
+  if (tab === 'account') populateAccountTab();
+}
+
+function populateAccountTab() {
+  const signedIn = document.getElementById('accountSignedIn');
+  const signedOut = document.getElementById('accountSignedOut');
+  if (currentUser) {
+    signedIn.style.display = 'block';
+    signedOut.style.display = 'none';
+    document.getElementById('settingsName').value = currentUser.name;
+    document.getElementById('settingsEmail').value = currentUser.email;
+  } else {
+    signedIn.style.display = 'none';
+    signedOut.style.display = 'block';
+  }
+}
+
+function showSettingsMsg(id, text, type) {
+  const el = document.getElementById(id);
+  el.textContent = text;
+  el.className = `settings-msg ${type}`;
+  el.style.display = 'block';
+}
+
+async function saveProfile() {
+  try {
+    const res = await fetch('/api/account', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({
+        name: document.getElementById('settingsName').value,
+        email: document.getElementById('settingsEmail').value,
+      }),
+    });
+    const data = await res.json();
+    if (!res.ok) return showSettingsMsg('profileMsg', data.error || 'Could not save changes.', 'error');
+    currentUser = data.user;
+    renderAccount();
+    showSettingsMsg('profileMsg', 'Profile updated.', 'success');
+    showToast('Profile saved', 'success');
+  } catch (e) {
+    showSettingsMsg('profileMsg', 'Could not reach the server.', 'error');
+  }
+}
+
+async function changePassword() {
+  const currentPassword = document.getElementById('currentPassword').value;
+  const newPassword = document.getElementById('newPassword').value;
+  if (!currentPassword || !newPassword) return showSettingsMsg('passwordMsg', 'Fill in both fields.', 'error');
+  try {
+    const res = await fetch('/api/account/password', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ currentPassword, newPassword }),
+    });
+    const data = await res.json();
+    if (!res.ok) return showSettingsMsg('passwordMsg', data.error || 'Could not update password.', 'error');
+    document.getElementById('currentPassword').value = '';
+    document.getElementById('newPassword').value = '';
+    showSettingsMsg('passwordMsg', 'Password updated.', 'success');
+    showToast('Password changed', 'success');
+  } catch (e) {
+    showSettingsMsg('passwordMsg', 'Could not reach the server.', 'error');
+  }
+}
+
+async function deleteAccount() {
+  if (!confirm('This permanently deletes your account. Continue?')) return;
+  try {
+    await fetch('/api/account', { method: 'DELETE', credentials: 'include' });
+    currentUser = null;
+    renderAccount();
+    closeSettings();
+  } catch (e) {
+    alert('Could not reach the server.');
+  }
+}
+
+// ── TOASTS ──────────────────────────────────────────────────────────────────
+function showToast(message, type = 'info', duration = 3000) {
+  const stack = document.getElementById('toastStack');
+  const icons = { success: '✓', error: '✕', info: 'i' };
+  const toast = document.createElement('div');
+  toast.className = `toast ${type}`;
+  toast.innerHTML = `<div class="toast-icon">${icons[type]||'i'}</div><span>${message}</span><button class="toast-close" onclick="this.parentElement.remove()">×</button>`;
+  stack.appendChild(toast);
+  setTimeout(() => {
+    toast.classList.add('removing');
+    toast.addEventListener('animationend', () => toast.remove(), { once: true });
+  }, duration);
+}
+
+// ── KEYBOARD SHORTCUTS ───────────────────────────────────────────────────────
+document.addEventListener('keydown', e => {
+  // Ctrl/Cmd + Enter → extract
+  if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+    e.preventDefault();
+    const btn = document.getElementById('extractBtn');
+    if (btn && !btn.disabled) extract();
+  }
+  // Ctrl/Cmd + K → focus history search
+  if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+    e.preventDefault();
+    const s = document.getElementById('historySearch');
+    if (s) { s.focus(); s.select(); }
+  }
+  // Escape → close any open panel/modal
+  if (e.key === 'Escape') {
+    closeAuthModal();
+    closeSettings();
+    skipOnboarding();
+  }
+});
+
+// ── ONBOARDING ───────────────────────────────────────────────────────────────
+const OB_STEPS = [
+  { title: 'Welcome to Actio', desc: 'Paste your meeting notes, a quick phrase, or upload a .txt file — Actio handles it all.', target: '#transcript' },
+  { title: 'Hit Extract', desc: 'Press the button (or Ctrl+↵) and Actio pulls out every task, owner, and deadline instantly.', target: '#extractBtn' },
+  { title: 'Your history lives here', desc: 'Every extraction is auto-saved. Search, rename, or load any past meeting in one click.', target: '#historyList' },
+];
+let obIndex = 0;
+
+function startOnboarding() {
+  if (localStorage.getItem('actio-ob-done')) return;
+  obIndex = 0;
+  document.getElementById('obOverlay').classList.add('active');
+  renderObStep();
+}
+function renderObStep() {
+  const step = OB_STEPS[obIndex];
+  document.getElementById('obStep').textContent = `Step ${obIndex + 1} of ${OB_STEPS.length}`;
+  document.getElementById('obTitle').textContent = step.title;
+  document.getElementById('obDesc').textContent = step.desc;
+  document.getElementById('obNext').textContent = obIndex === OB_STEPS.length - 1 ? 'Got it 🎉' : 'Next →';
+  // dots
+  document.getElementById('obDots').innerHTML = OB_STEPS.map((_,i) =>
+    `<div class="ob-dot ${i === obIndex ? 'active' : ''}"></div>`).join('');
+  // position hole + tip
+  const target = document.querySelector(step.target);
+  const tip = document.getElementById('obTip');
+  const hole = document.getElementById('obHole');
+  if (target) {
+    const r = target.getBoundingClientRect();
+    const pad = 8;
+    hole.style.cssText = `left:${r.left-pad}px;top:${r.top-pad}px;width:${r.width+pad*2}px;height:${r.height+pad*2}px`;
+    // place tip below or above
+    const tipH = 160, tipW = 240, margin = 14;
+    let tipTop = r.bottom + pad + margin;
+    let tipLeft = Math.max(12, Math.min(window.innerWidth - tipW - 12, r.left));
+    if (tipTop + tipH > window.innerHeight - 20) tipTop = r.top - pad - tipH - margin;
+    tip.style.cssText = `top:${tipTop}px;left:${tipLeft}px`;
+  }
+}
+function nextObStep() {
+  obIndex++;
+  if (obIndex >= OB_STEPS.length) { skipOnboarding(); return; }
+  renderObStep();
+}
+function skipOnboarding() {
+  document.getElementById('obOverlay').classList.remove('active');
+  localStorage.setItem('actio-ob-done', '1');
+}
+
+// Event delegation for card action buttons (avoids inline handler quoting issues)
+document.addEventListener('click', function(e) {
+  // card copy
+  const copyBtn = e.target.closest('.card-copy-btn');
+  if (copyBtn) {
+    const card = copyBtn.closest('.card');
+    if (card) copyTaskCard(card.dataset.task, card.dataset.owner, card.dataset.deadline, card.dataset.priority);
+    return;
+  }
+  // card note
+  const noteBtn = e.target.closest('.card-note-btn');
+  if (noteBtn) {
+    const card = noteBtn.closest('.card');
+    if (card) showNoteInput(_currentHistId, parseInt(card.dataset.idx));
+    return;
+  }
+  // card check (mark done)
+  const checkBtn = e.target.closest('.card-check-btn');
+  if (checkBtn) {
+    const card = checkBtn.closest('.card');
+    if (card) toggleDone(_currentHistId, parseInt(card.dataset.idx));
+    return;
+  }
+  // history item click
+  const histItem = e.target.closest('.history-item');
+  if (histItem && !e.target.closest('.history-del') && !e.target.closest('.history-item-title')) {
+    const hid = parseInt(histItem.dataset.hid);
+    if (hid) loadHistory(hid, e);
+    return;
+  }
+  // history delete
+  const histDel = e.target.closest('.history-del');
+  if (histDel) {
+    const hid = parseInt(histDel.dataset.hid);
+    if (hid) deleteHistoryItem(hid, e);
+    return;
+  }
+});
+
+// history rename via input change — delegated
+document.addEventListener('change', function(e) {
+  const input = e.target.closest('.history-item-title');
+  if (input) {
+    const hid = parseInt(input.dataset.hid);
+    if (hid) renameHistoryItem(hid, input.value);
+  }
+});
+document.addEventListener('click', function(e) {
+  const input = e.target.closest('.history-item-title');
+  if (input) e.stopPropagation();
+}, true);
+
+checkSession();
+pruneHistory();
+renderHistory(null);
+showPage('app');
+startTutLoop();
+setTimeout(startOnboarding, 800);
+
+</script>
+</body>
+</html>
